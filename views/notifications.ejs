@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+<% const say = {
+  snap_like: '내 스냅을 좋아해요',
+  snap_comment: '내 스냅에 댓글을 달았어요',
+  talk_comment: '내 토크에 댓글을 달았어요',
+  talk_fire: '내 토크에 🔥 불을 지폈어요',
+  follow: '나를 팔로우해요',
+  mention: '나를 언급했어요',
+}; const ico = { snap_like: '♥', snap_comment: '💬', talk_comment: '💬', talk_fire: '🔥', follow: '＋', mention: '@' }; %>
+<section class="box narrow-wide">
+  <div class="box-head">
+    <h1 class="box-title">🔔 알림</h1>
+    <% if (notes.length) { %>
+      <form method="post" action="/notifications/clear" data-confirm="알림을 모두 지울까요?">
+        <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="linkbtn small">모두 지우기</button>
+      </form>
+    <% } %>
+  </div>
+  <% if (notes.length === 0) { %><div class="empty">아직 알림이 없어요.</div><% } %>
+  <% notes.forEach(n => { %>
+    <a class="note-row <%= n.read_at ? '' : 'unread' %>" href="<%= n.link %>">
+      <span class="note-av">
+        <% if (n.actor_id) { %><img class="av av-44" src="<%= avatar(n) %>" alt=""><% } else { %><span class="guest-av big">👤</span><% } %>
+        <span class="note-ico t-<%= n.type %>"><%= ico[n.type] || '•' %></span>
+      </span>
+      <div class="grow">
+        <div class="small"><% if (n.actor_id) { %><b>@<%= n.actor_name %></b>님이<% } else if (n.actor_name === '손님') { %><b>손님</b>이<% } else { %><b>손님 <%= n.actor_name %></b>님이<% } %> <%= say[n.type] || '' %></div>
+        <% if (n.snippet) { %><div class="note-snippet tiny muted">“<%= n.snippet %>”</div><% } %>
+        <div class="tiny muted light"><%= ago(n.created_at) %></div>
+      </div>
+      <% if (!n.read_at) { %><span class="new-dot" aria-label="새 알림"></span><% } %>
+    </a>
+  <% }) %>
+</section>
+<%- include('partials/footer') %>

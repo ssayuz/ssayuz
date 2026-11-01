@@ -26,7 +26,7 @@
     <article class="talk-item <%= t.fire - t.ice >= threshold ? 'is-hot' : '' %>">
       <%- include('../partials/heat', { t, threshold }) %>
       <div class="talk-main">
-        <a class="talk-title" href="/talk/<%= room.slug %>/<%= t.id %>"><span class="tag"><%= t.topic %></span> <%= t.title %><% if (t.ccount) { %> <span class="cc">+<%= t.ccount %></span><% } %></a>
+        <a class="talk-title" href="/talk/<%= room.slug %>/<%= t.id %>"><% if (t.hidden_at) { %><span class="tag tag-hot">숨김</span> <% } %><span class="tag"><%= t.topic %></span> <%= t.title %><% if (t.ccount) { %> <span class="cc">+<%= t.ccount %></span><% } %></a>
         <% if (t.excerpt) { %><div class="talk-excerpt"><%= t.excerpt %></div><% } %>
         <div class="talk-meta">
           <%- include('../partials/writer', { w: t }) %>

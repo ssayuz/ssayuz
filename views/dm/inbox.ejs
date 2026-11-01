@@ -1,0 +1,18 @@
+<%- include('../partials/header') %>
+<section class="box narrow-wide">
+  <div class="box-head"><h1 class="box-title">✉ 메시지</h1></div>
+  <% if (threads.length === 0) { %>
+    <div class="empty">아직 주고받은 메시지가 없어요.<br><span class="small">상대 프로필에서 <b>메시지</b> 버튼을 눌러 시작해 보세요.</span></div>
+  <% } %>
+  <% threads.forEach(t => { %>
+    <a class="thread-row <%= t.unread ? 'unread' : '' %>" href="/dm/@<%= t.username %>">
+      <img class="av av-44" src="<%= avatar(t) %>" alt="">
+      <div class="grow">
+        <div class="row between"><span class="bold">@<%= t.username %></span><span class="tiny muted light"><%= ago(t.last_at) %></span></div>
+        <div class="thread-last small"><%= t.last_sender === user.id ? '나: ' : '' %><%= t.last_body %></div>
+      </div>
+      <% if (t.unread) { %><span class="dot-count"><%= t.unread %></span><% } %>
+    </a>
+  <% }) %>
+</section>
+<%- include('../partials/footer') %>

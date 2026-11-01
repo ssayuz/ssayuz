@@ -25,6 +25,8 @@ router.post('/signup', (req, res) => {
   const r = db
     .prepare('INSERT INTO users (username, display_name, password_hash, created_at) VALUES (?, ?, ?, ?)')
     .run(username, displayName, hashPassword(password), Date.now());
+  const admins = String(process.env.ADMIN_USERNAMES || '').split(',').map((x) => x.trim().toLowerCase());
+  if (admins.includes(username.toLowerCase())) db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").run(r.lastInsertRowid);
   createSession(res, Number(r.lastInsertRowid));
   res.redirect('/snap');
 });
@@ -38,9 +40,13 @@ router.post('/login', (req, res) => {
   const username = String(req.body.username || '').trim();
   const password = String(req.body.password || '');
   const next = safeNext(req.body.next);
-  const u = db.prepare('SELECT id, password_hash FROM users WHERE username = ?').get(username);
+  const u = db.prepare('SELECT id, password_hash, banned_at, ban_reason FROM users WHERE username = ?').get(username);
   if (!u || !verifyPassword(password, u.password_hash)) {
     return res.status(400).render('login', { title: '로그인', error: '아이디 또는 비밀번호가 맞지 않아요.', next, username });
+  }
+  if (u.banned_at) {
+    const why = u.ban_reason ? ` (사유: ${u.ban_reason})` : '';
+    return res.status(403).render('login', { title: '로그인', error: `이용이 제한된 계정이에요${why}`, next, username });
   }
   createSession(res, u.id);
   res.redirect(next);

@@ -1,0 +1,108 @@
+<%- include('partials/header') %>
+<div class="section-head">
+  <div><span class="kicker">admin</span><h1 class="h1 mt">🛡 관리</h1></div>
+</div>
+<div class="stat-grid">
+  <div class="stat-card"><b><%= stats.users %></b><span>가입자</span></div>
+  <div class="stat-card"><b><%= stats.banned %></b><span>차단 계정</span></div>
+  <div class="stat-card"><b><%= stats.ipBans %></b><span>차단 IP</span></div>
+  <div class="stat-card"><b><%= stats.hidden %></b><span>숨긴 항목</span></div>
+  <div class="stat-card"><b><%= stats.talksToday %></b><span>오늘 토크</span></div>
+  <div class="stat-card"><b><%= stats.snapsToday %></b><span>오늘 스냅</span></div>
+</div>
+<nav class="tabs"><div class="seg">
+  <a href="/admin" class="<%= tab === 'overview' ? 'on' : '' %>">최근 글</a>
+  <a href="/admin?tab=users" class="<%= tab === 'users' ? 'on' : '' %>">사용자</a>
+  <a href="/admin?tab=hidden" class="<%= tab === 'hidden' ? 'on' : '' %>">숨긴 항목</a>
+  <a href="/admin?tab=bans" class="<%= tab === 'bans' ? 'on' : '' %>">IP 차단</a>
+  <a href="/admin?tab=log" class="<%= tab === 'log' ? 'on' : '' %>">기록</a>
+</div></nav>
+
+<% if (tab === 'overview') { %>
+  <div class="cols-2">
+    <section class="box">
+      <div class="box-head"><h2 class="box-title">최근 토크</h2></div>
+      <div class="admin-list">
+        <% if (!recentTalks.length) { %><div class="empty small">없어요</div><% } %>
+        <% recentTalks.forEach(t => { %>
+          <div class="admin-row <%= t.hidden_at ? 'is-hidden' : '' %>">
+            <div class="grow"><a class="bold" href="/talk/<%= t.slug %>/<%= t.id %>"><%= t.title %></a>
+              <div class="tiny muted"><%= t.username ? '@' + t.username : '손님 ' + t.nickname + ' (' + t.ip_prefix + ')' %> · <%= ago(t.created_at) %><% if (t.hidden_at) { %> · <b>숨김</b><% } %></div></div>
+            <%- include('partials/hidebtn', { kind: 'talk', id: t.id, hidden: t.hidden_at, back: '/admin', small: true }) %>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+    <section class="box">
+      <div class="box-head"><h2 class="box-title">최근 스냅</h2></div>
+      <div class="admin-list">
+        <% if (!recentSnaps.length) { %><div class="empty small">없어요</div><% } %>
+        <% recentSnaps.forEach(s => { %>
+          <div class="admin-row <%= s.hidden_at ? 'is-hidden' : '' %>">
+            <div class="grow"><a class="bold" href="/snap/<%= s.id %>">스냅 #<%= s.id %></a> <span class="small"><%= s.caption.slice(0, 40) %></span>
+              <div class="tiny muted">@<%= s.username %> · <%= ago(s.created_at) %><% if (s.hidden_at) { %> · <b>숨김</b><% } %></div></div>
+            <%- include('partials/hidebtn', { kind: 'snap', id: s.id, hidden: s.hidden_at, back: '/admin', small: true }) %>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  </div>
+<% } else if (tab === 'users') { %>
+  <form class="searchbar mb" method="get" action="/admin"><input type="hidden" name="tab" value="users"><input type="search" name="q" value="<%= q %>" placeholder="아이디나 닉네임"><button class="btn btn-sm">찾기</button></form>
+  <section class="box admin-list">
+    <% users.forEach(u => { %>
+      <div class="admin-row <%= u.banned_at ? 'is-hidden' : '' %>">
+        <div class="grow">
+          <a class="bold" href="/@<%= u.username %>">@<%= u.username %></a> <span class="small"><%= u.display_name %></span>
+          <% if (u.role === 'admin') { %><span class="tag tag-user">관리자</span><% } %>
+          <% if (u.banned_at) { %><span class="tag tag-hot">차단됨</span><% } %>
+          <div class="tiny muted">토크 <%= u.talks %> · 스냅 <%= u.snaps %> · 가입 <%= ago(u.created_at) %><% if (u.ban_reason) { %> · 사유: <%= u.ban_reason %><% } %></div>
+        </div>
+        <% if (u.id !== user.id) { %>
+          <% if (u.banned_at) { %>
+            <form method="post" action="/admin/users/<%= u.id %>/unban" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-sm">차단 해제</button></form>
+          <% } else if (u.role !== 'admin') { %>
+            <form method="post" action="/admin/users/<%= u.id %>/ban" class="inline ban-form" data-confirm="@<%= u.username %> 계정을 차단할까요? 바로 로그아웃돼요.">
+              <input type="hidden" name="_csrf" value="<%= csrf %>"><input name="reason" placeholder="사유 (선택)" maxlength="100" aria-label="차단 사유"><button class="btn btn-sm btn-danger">차단</button>
+            </form>
+          <% } %>
+          <% if (!u.banned_at) { %>
+            <form method="post" action="/admin/users/<%= u.id %>/role" class="inline" data-confirm="권한을 바꿀까요?">
+              <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="role" value="<%= u.role === 'admin' ? 'user' : 'admin' %>">
+              <button class="linkbtn tiny"><%= u.role === 'admin' ? '관리자 해제' : '관리자로' %></button>
+            </form>
+          <% } %>
+        <% } else { %><span class="tiny muted">나</span><% } %>
+      </div>
+    <% }) %>
+    <% if (!users.length) { %><div class="empty small">없어요</div><% } %>
+  </section>
+<% } else if (tab === 'hidden') { %>
+  <section class="box admin-list">
+    <% if (!hidden.length) { %><div class="empty small">숨긴 항목이 없어요.</div><% } %>
+    <% hidden.forEach(h => { %>
+      <div class="admin-row">
+        <div class="grow"><span class="tag"><%= kinds[h.kind].label %></span> <a class="bold" href="<%= h.link %>"><%= (h.text || '(내용 없음)').slice(0, 60) %></a><div class="tiny muted"><%= ago(h.hidden_at) %> 숨김</div></div>
+        <%- include('partials/hidebtn', { kind: h.kind, id: h.id, hidden: true, back: '/admin?tab=hidden', small: false }) %>
+      </div>
+    <% }) %>
+  </section>
+<% } else if (tab === 'bans') { %>
+  <section class="box admin-list">
+    <% if (!bans.length) { %><div class="empty small">차단한 IP가 없어요. 손님 글 화면의 🛡 IP 차단 버튼으로 막을 수 있어요.</div><% } %>
+    <% bans.forEach(b => { %>
+      <div class="admin-row">
+        <div class="grow"><b><%= b.ip_prefix %>.*</b> <span class="small"><%= b.reason %></span><div class="tiny muted">@<%= b.admin || '?' %> · <%= ago(b.created_at) %></div></div>
+        <form method="post" action="/admin/ip-bans/<%= b.id %>/delete" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-sm">해제</button></form>
+      </div>
+    <% }) %>
+  </section>
+<% } else { %>
+  <section class="box admin-list">
+    <% if (!log.length) { %><div class="empty small">기록이 없어요.</div><% } %>
+    <% log.forEach(l => { %>
+      <div class="admin-row"><div class="grow"><b><%= l.action %></b> · <%= l.target %><% if (l.note) { %> <span class="muted">— <%= l.note %></span><% } %><div class="tiny muted">@<%= l.admin || '?' %> · <%= fullTime(l.created_at) %></div></div></div>
+    <% }) %>
+  </section>
+<% } %>
+<%- include('partials/footer') %>

@@ -27,6 +27,9 @@
     <div class="topright">
       <% if (user) { %>
         <a class="btn btn-lime btn-sm hide-sm" href="/snap/new">＋ 스냅</a>
+        <% if (isAdmin) { %><a class="iconlink hide-sm <%= path.startsWith('/admin') ? 'on' : '' %>" href="/admin" title="관리">🛡<span class="sr">관리</span></a><% } %>
+        <a class="iconlink <%= path.startsWith('/notifications') ? 'on' : '' %>" href="/notifications" title="알림">🔔<% if (unreadNotes) { %><span class="badge"><%= unreadNotes > 99 ? '99+' : unreadNotes %></span><% } %><span class="sr">알림</span></a>
+        <a class="iconlink <%= path.startsWith('/dm') ? 'on' : '' %>" href="/dm" title="메시지">✉<% if (unreadDms) { %><span class="badge"><%= unreadDms > 99 ? '99+' : unreadDms %></span><% } %><span class="sr">메시지</span></a>
         <a href="/@<%= user.username %>" title="내 프로필"><img class="av av-36" src="<%= avatar(user) %>" alt="내 프로필"></a>
         <form method="post" action="/logout" class="inline hide-sm">
           <input type="hidden" name="_csrf" value="<%= csrf %>">

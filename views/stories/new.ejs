@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<section class="box box-pad-lg narrow">
+  <span class="kicker">story</span>
+  <h1 class="h2 mt">스토리 올리기</h1>
+  <p class="muted small light">스토리는 <b>24시간 뒤에 사라져요.</b></p>
+  <% if (error) { %><div class="alert mt"><%= error %></div><% } %>
+  <form method="post" action="/stories/new?_csrf=<%= csrf %>" enctype="multipart/form-data" class="stack mt">
+    <label class="drop">
+      <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp" required data-preview="#preview">
+      <span class="drop-ico">⏳</span><span class="bold">사진 한 장 고르기</span><span class="tiny muted light">세로 사진이 잘 어울려요</span>
+    </label>
+    <div id="preview" class="preview"></div>
+    <label>한 줄 <span class="muted light">(선택)</span><input name="caption" value="<%= caption %>" maxlength="100" placeholder="지금 뭐 해요?"></label>
+    <button class="btn btn-ink btn-block">스토리 올리기</button>
+  </form>
+</section>
+<%- include('../partials/footer') %>

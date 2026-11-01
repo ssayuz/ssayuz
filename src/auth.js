@@ -45,13 +45,25 @@ function loadSession(req, res, next) {
   if (typeof sid === 'string' && /^[a-f0-9]{64}$/.test(sid)) {
     const row = db
       .prepare(
-        `SELECT u.id, u.username, u.display_name, u.bio, u.avatar, s.created_at AS s_created
+        `SELECT u.id, u.username, u.display_name, u.bio, u.avatar, u.role, u.banned_at, s.created_at AS s_created
          FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?`
       )
       .get(sha(sid));
-    if (row && Date.now() - row.s_created < SESSION_TTL) req.user = row;
+    if (row && Date.now() - row.s_created < SESSION_TTL && !row.banned_at) req.user = row;
   }
   res.locals.user = req.user;
+  res.locals.isAdmin = !!req.user && req.user.role === 'admin';
+  res.locals.unreadNotes = 0;
+  res.locals.unreadDms = 0;
+  if (req.user && req.method === 'GET') {
+    res.locals.unreadNotes = db.prepare('SELECT COUNT(*) AS n FROM notifications WHERE user_id = ? AND read_at IS NULL').get(req.user.id).n;
+    res.locals.unreadDms = db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM dm_messages m JOIN dm_threads t ON t.id = m.thread_id
+         WHERE (t.user_a = ? OR t.user_b = ?) AND m.sender_id != ? AND m.read_at IS NULL`
+      )
+      .get(req.user.id, req.user.id, req.user.id).n;
+  }
   next();
 }
 
@@ -91,6 +103,11 @@ function requireLogin(req, res, next) {
   res.redirect('/login?next=' + encodeURIComponent(req.originalUrl));
 }
 
+function requireAdmin(req, res, next) {
+  if (req.user && req.user.role === 'admin') return next();
+  res.status(403).render('error', { title: '403', message: '관리자만 볼 수 있어요.' });
+}
+
 function safeNext(n) {
   return typeof n === 'string' && n.startsWith('/') && !n.startsWith('//') && !n.startsWith('/\\') ? n : '/';
 }
@@ -103,5 +120,6 @@ module.exports = {
   loadSession,
   csrf,
   requireLogin,
+  requireAdmin,
   safeNext,
 };

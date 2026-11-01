@@ -2,21 +2,25 @@
 <div class="member-banner" aria-hidden="true"></div>
 <section class="member-card">
   <div class="member-top">
-    <img class="av av-120" src="<%= avatar(member) %>" alt="@<%= member.username %>의 사진">
+    <% if (hasStory) { %><a class="story-ring member-av" href="/stories/@<%= member.username %>" title="스토리 보기"><img class="av av-120" src="<%= avatar(member) %>" alt="@<%= member.username %>의 스토리 보기"></a><% } else { %><img class="av av-120 member-av" src="<%= avatar(member) %>" alt="@<%= member.username %>의 사진"><% } %>
     <div class="row">
       <% if (isMe) { %>
         <a class="btn btn-sm" href="/settings">✎ 프로필 편집</a>
+        <% if (isAdmin) { %><a class="btn btn-sm btn-admin" href="/admin">🛡 관리</a><% } %>
+        <a class="btn btn-sm" href="/stories/new">⏳ 스토리</a>
         <a class="btn btn-lime btn-sm" href="/snap/new">＋ 스냅</a>
       <% } else if (user) { %>
         <form method="post" action="/@<%= member.username %>/follow" class="inline follow-form">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
           <button class="btn <%= following ? '' : 'btn-lime' %>"><%= following ? '✓ 팔로잉' : '＋ 팔로우' %></button>
         </form>
+        <% if (!member.banned_at) { %><a class="btn" href="/dm/@<%= member.username %>">✉ 메시지</a><% } %>
       <% } else { %>
         <a class="btn btn-lime" href="/login?next=/@<%= member.username %>">＋ 팔로우</a>
       <% } %>
     </div>
   </div>
+  <% if (member.banned_at) { %><div class="alert mt">이용이 제한된 계정이에요.</div><% } %>
   <h1 class="member-name"><%= member.display_name %> <span class="handle">@<%= member.username %></span></h1>
   <% if (member.bio) { %><p class="bio"><%- richText(member.bio) %></p><% } %>
   <div class="stats">
@@ -25,6 +29,22 @@
     <a class="stat" href="/@<%= member.username %>/followers"><b class="follower-count"><%= num(member.followers) %></b> 팔로워</a>
     <a class="stat" href="/@<%= member.username %>/following"><b><%= num(member.following) %></b> 팔로잉</a>
   </div>
+  <% if (isAdmin && !isMe) { %>
+    <div class="admin-bar admin-inline" id="admin">
+      <b>🛡 관리</b>
+      <% if (member.role === 'admin') { %>
+        <span class="tag tag-user">관리자</span>
+      <% } else if (member.banned_at) { %>
+        <span class="small">차단됨<%= member.ban_reason ? ' · ' + member.ban_reason : '' %></span>
+        <form method="post" action="/admin/users/<%= member.id %>/unban" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="back" value="/@<%= member.username %>"><button class="btn btn-sm">차단 해제</button></form>
+      <% } else { %>
+        <form method="post" action="/admin/users/<%= member.id %>/ban" class="inline ban-form" data-confirm="@<%= member.username %> 계정을 차단할까요? 바로 로그아웃돼요.">
+          <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="back" value="/@<%= member.username %>">
+          <input name="reason" placeholder="사유 (선택)" maxlength="100" aria-label="차단 사유"><button class="btn btn-sm btn-danger">계정 차단</button>
+        </form>
+      <% } %>
+    </div>
+  <% } %>
 </section>
 <nav class="tabs">
   <div class="seg">

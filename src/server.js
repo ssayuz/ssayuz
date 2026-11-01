@@ -38,6 +38,10 @@ app.use(csrf);
 
 app.use(require('./routes/auth'));
 app.use('/talk', require('./routes/talk'));
+app.use(require('./routes/stories'));
+app.use(require('./routes/dm'));
+app.use(require('./routes/notifications'));
+app.use(require('./routes/admin'));
 app.use(require('./routes/snap'));
 
 app.use((req, res) => res.status(404).render('error', { title: '404', message: '여긴 아무것도 없어요.' }));
@@ -46,6 +50,11 @@ app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
   res.status(500).render('error', { title: '오류', message: '서버에 문제가 생겼어요. 잠시 후 다시 시도해 주세요.' });
 });
+
+// 24시간 지난 스토리 정리 (시작할 때 + 10분마다)
+const { cleanupStories } = require('./routes/stories');
+cleanupStories();
+setInterval(cleanupStories, 10 * 60 * 1000).unref();
 
 if (require.main === module) {
   app.listen(config.PORT, () => console.log(`ssayuz 실행 중: http://localhost:${config.PORT}`));

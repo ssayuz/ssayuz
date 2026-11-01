@@ -2,6 +2,7 @@
 <% const msgs = { voted: '이미 🔥 또는 🧊 를 눌렀어요.', bad_pw: '비밀번호가 틀렸거나 권한이 없어요.', comment_len: '댓글은 1~1000자로 써 주세요.', comment_pw: '손님 댓글은 비밀번호(2자 이상)가 필요해요.', slow: '너무 빨라요. 잠깐만 쉬었다가 다시 해 주세요.' }; %>
 <% if (msgs[msg]) { %><div class="alert"><%= msgs[msg] %></div><% } %>
 <article class="box">
+  <% if (talk.hidden_at) { %><span class="hidden-flag">🛡 관리자가 숨긴 글이에요. 관리자에게만 보여요.</span><% } %>
   <header class="article-head">
     <div class="row wrap-row">
       <a class="tag" href="/talk/<%= room.slug %>"><%= room.emoji %> <%= room.name %></a>
@@ -54,6 +55,20 @@
       </details>
     <% } %>
   </div>
+  <% if (isAdmin) { %>
+    <div class="admin-bar">
+      <b>🛡 관리</b>
+      <%- include('../partials/hidebtn', { kind: 'talk', id: talk.id, hidden: talk.hidden_at, back: '/talk/' + room.slug + '/' + talk.id }) %>
+      <% if (talk.user_id && talk.username) { %>
+        <a class="btn btn-sm btn-admin" href="/@<%= talk.username %>#admin">작성자 관리</a>
+      <% } else if (!talk.user_id) { %>
+        <form method="post" action="/admin/ip-ban" class="inline ban-form" data-confirm="이 손님의 IP에서 글쓰기를 막을까요?">
+          <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="kind" value="talk"><input type="hidden" name="id" value="<%= talk.id %>"><input type="hidden" name="back" value="/talk/<%= room.slug %>/<%= talk.id %>">
+          <input name="reason" placeholder="사유 (선택)" maxlength="100" aria-label="차단 사유"><button class="btn btn-sm btn-danger">IP 차단</button>
+        </form>
+      <% } %>
+    </div>
+  <% } %>
 </article>
 
 <section class="box" id="comments">
@@ -62,13 +77,21 @@
   <% if (comments.length) { %>
   <ul class="bubbles">
     <% comments.forEach(c => { const isOp = (talk.user_id && c.user_id === talk.user_id) || (!talk.user_id && !c.user_id && c.ip_prefix === talk.ip_prefix && c.nickname === talk.nickname); %>
-      <li class="bubble-row <%= isOp ? 'op' : '' %>" id="c<%= c.id %>">
+      <li class="bubble-row <%= isOp ? 'op' : '' %> <%= c.hidden_at ? 'is-hidden-item' : '' %>" id="c<%= c.id %>">
         <% if (c.username) { %><a href="/@<%= c.username %>"><img class="av av-36" src="<%= avatar(c) %>" alt=""></a><% } else { %><span class="guest-av" aria-hidden="true">👤</span><% } %>
         <div class="bubble-wrap">
           <div class="bubble-who">
             <%- include('../partials/writer', { w: c, noAv: true }) %>
             <% if (isOp) { %><span class="tag">글쓴이</span><% } %>
             <span class="muted light"><%= ago(c.created_at) %></span>
+            <% if (c.hidden_at) { %><span class="tag tag-hot">숨김</span><% } %>
+            <%- include('../partials/hidebtn', { kind: 'tcomment', id: c.id, hidden: c.hidden_at, back: '/talk/' + room.slug + '/' + talk.id + '#c' + c.id, small: true }) %>
+            <% if (isAdmin && !c.user_id) { %>
+              <form method="post" action="/admin/ip-ban" class="inline" data-confirm="이 손님의 IP에서 글쓰기를 막을까요?">
+                <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="kind" value="tcomment"><input type="hidden" name="id" value="<%= c.id %>"><input type="hidden" name="back" value="/talk/<%= room.slug %>/<%= talk.id %>#c<%= c.id %>">
+                <button class="linkbtn tiny admin-link">IP 차단</button>
+              </form>
+            <% } %>
             <% if (c.user_id) { %>
               <% if (user && user.id === c.user_id) { %>
                 <form method="post" action="/talk/<%= room.slug %>/<%= talk.id %>/comments/<%= c.id %>/delete" class="inline" data-confirm="댓글을 지울까요?">

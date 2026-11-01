@@ -5,6 +5,9 @@ const { requireLogin } = require('../auth');
 const { images: uploadImages, removeFiles } = require('../upload');
 const { toInt, images, cooldown, likeEscape } = require('../helpers');
 const { FEED_PAGE_SIZE, EXPLORE_PAGE_SIZE, HOT_THRESHOLD } = require('../config');
+const { visible } = require('../moderation');
+const { notify, unnotify, notifyMentions } = require('../notify');
+const { storyTray, hasActiveStory } = require('./stories');
 
 const router = express.Router();
 const notFound = (res, message = '여긴 아무것도 없어요.') => res.status(404).render('error', { title: '404', message });
@@ -13,20 +16,20 @@ const viewer = (req) => (req.user ? req.user.id : 0);
 
 const SNAP_COLS = `s.*, u.username, u.display_name, u.avatar,
   (SELECT COUNT(*) FROM likes l WHERE l.snap_id = s.id) AS likes,
-  (SELECT COUNT(*) FROM comments c WHERE c.snap_id = s.id) AS ccount,
+  (SELECT COUNT(*) FROM comments c WHERE c.snap_id = s.id AND c.hidden_at IS NULL) AS ccount,
   EXISTS (SELECT 1 FROM likes l WHERE l.snap_id = s.id AND l.user_id = ?) AS liked`;
 
-function getSnap(id, viewerId) {
+function getSnap(req, id) {
   const sid = toInt(id);
   if (!sid) return null;
-  return db.prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id WHERE s.id = ?`).get(viewerId || 0, sid);
+  return db.prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id WHERE s.id = ? AND ${visible(req, 's')}`).get(viewer(req), sid);
 }
 
-function latestComments(snapId, limit) {
+function latestComments(req, snapId, limit) {
   return db
     .prepare(
       `SELECT * FROM (SELECT c.*, u.username, u.display_name, u.avatar FROM comments c JOIN users u ON u.id = c.user_id
-       WHERE c.snap_id = ? ORDER BY c.id DESC LIMIT ?) ORDER BY id`
+       WHERE c.snap_id = ? AND ${visible(req, 'c')} ORDER BY c.id DESC LIMIT ?) ORDER BY id`
     )
     .all(snapId, limit);
 }
@@ -36,21 +39,21 @@ router.get('/', (req, res) => {
   const hot = db
     .prepare(
       `SELECT t.id, t.title, t.fire, t.ice, t.created_at, r.slug, r.name AS rname, r.emoji,
-        (SELECT COUNT(*) FROM talk_comments c WHERE c.talk_id = t.id) AS ccount
+        (SELECT COUNT(*) FROM talk_comments c WHERE c.talk_id = t.id AND c.hidden_at IS NULL) AS ccount
        FROM talks t JOIN rooms r ON r.id = t.room_id
-       WHERE t.created_at > ? ORDER BY (t.fire - t.ice) DESC, t.id DESC LIMIT 8`
+       WHERE t.created_at > ? AND t.hidden_at IS NULL ORDER BY (t.fire - t.ice) DESC, t.id DESC LIMIT 8`
     )
     .all(Date.now() - 7 * 86400000);
   const fresh = db
     .prepare(
       `SELECT t.id, t.title, t.created_at, r.slug, r.name AS rname, r.emoji,
-        (SELECT COUNT(*) FROM talk_comments c WHERE c.talk_id = t.id) AS ccount
-       FROM talks t JOIN rooms r ON r.id = t.room_id ORDER BY t.id DESC LIMIT 8`
+        (SELECT COUNT(*) FROM talk_comments c WHERE c.talk_id = t.id AND c.hidden_at IS NULL) AS ccount
+       FROM talks t JOIN rooms r ON r.id = t.room_id WHERE t.hidden_at IS NULL ORDER BY t.id DESC LIMIT 8`
     )
     .all();
   const rooms = db.prepare('SELECT slug, name, emoji, is_user FROM rooms ORDER BY is_user, id LIMIT 12').all();
   const snaps = db
-    .prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id ORDER BY likes DESC, s.id DESC LIMIT 8`)
+    .prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id WHERE s.hidden_at IS NULL ORDER BY likes DESC, s.id DESC LIMIT 8`)
     .all(viewer(req));
   res.render('home', { title: null, hot, fresh, rooms, snaps, threshold: HOT_THRESHOLD });
 });
@@ -63,11 +66,11 @@ router.get('/snap', (req, res) => {
   const snaps = db
     .prepare(
       `SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id
-       WHERE (s.user_id = ? OR s.user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?)) AND s.id < ?
+       WHERE (s.user_id = ? OR s.user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?)) AND s.id < ? AND s.hidden_at IS NULL
        ORDER BY s.id DESC LIMIT ?`
     )
     .all(uid, uid, uid, before, FEED_PAGE_SIZE);
-  for (const s of snaps) s.comment_list = latestComments(s.id, 2);
+  for (const s of snaps) s.comment_list = latestComments(req, s.id, 2);
   const suggestions = db
     .prepare(
       `SELECT u.id, u.username, u.display_name, u.avatar,
@@ -79,6 +82,7 @@ router.get('/snap', (req, res) => {
   res.render('snap/feed', {
     title: '스냅',
     snaps, suggestions,
+    tray: storyTray(uid),
     nextBefore: snaps.length === FEED_PAGE_SIZE ? snaps[snaps.length - 1].id : null,
   });
 });
@@ -95,7 +99,7 @@ router.get('/explore', (req, res) => {
     args.push('%#' + likeEscape(tag) + '%');
   }
   const snaps = db
-    .prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id WHERE s.id < ?${extra} ORDER BY s.id DESC LIMIT ?`)
+    .prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id WHERE s.id < ? AND s.hidden_at IS NULL${extra} ORDER BY s.id DESC LIMIT ?`)
     .all(...args, EXPLORE_PAGE_SIZE);
   const like = '%' + likeEscape(q) + '%';
   const people = q
@@ -127,31 +131,34 @@ router.post('/snap/new', requireLogin, uploadImages('images', 10), (req, res) =>
   const r = db
     .prepare('INSERT INTO snaps (user_id, caption, images, created_at) VALUES (?, ?, ?, ?)')
     .run(req.user.id, caption, JSON.stringify(req.uploaded), Date.now());
+  notifyMentions(caption, req.user, '/snap/' + r.lastInsertRowid);
   res.redirect('/snap/' + r.lastInsertRowid);
 });
 
 // ===== 스냅 보기 =====
 router.get('/snap/:id', (req, res) => {
-  const snap = getSnap(req.params.id, viewer(req));
-  if (!snap) return notFound(res, '스냅을 찾을 수 없어요.');
-  snap.comment_list = latestComments(snap.id, 500);
+  const snap = getSnap(req, req.params.id);
+  if (!snap) return notFound(res, '지워졌거나 숨겨진 스냅이에요.');
+  snap.comment_list = latestComments(req, snap.id, 500);
   const more = db
-    .prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id WHERE s.user_id = ? AND s.id != ? ORDER BY s.id DESC LIMIT 6`)
+    .prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id WHERE s.user_id = ? AND s.id != ? AND s.hidden_at IS NULL ORDER BY s.id DESC LIMIT 6`)
     .all(viewer(req), snap.user_id, snap.id);
   res.render('snap/view', { title: `@${snap.username}의 스냅`, snap, more });
 });
 
 // ===== 좋아요 (토글) =====
 router.post('/snap/:id/like', requireLogin, (req, res) => {
-  const snap = getSnap(req.params.id, req.user.id);
+  const snap = getSnap(req, req.params.id);
   if (!snap) return wantsJson(req) ? res.status(404).json({ error: 'not_found' }) : notFound(res);
   const force = req.body && req.body.force === '1';
   let on;
   if (snap.liked && !force) {
     db.prepare('DELETE FROM likes WHERE snap_id = ? AND user_id = ?').run(snap.id, req.user.id);
+    unnotify({ userId: snap.user_id, actorId: req.user.id, type: 'snap_like', link: '/snap/' + snap.id });
     on = false;
   } else {
-    db.prepare('INSERT OR IGNORE INTO likes (snap_id, user_id, created_at) VALUES (?, ?, ?)').run(snap.id, req.user.id, Date.now());
+    const ins = db.prepare('INSERT OR IGNORE INTO likes (snap_id, user_id, created_at) VALUES (?, ?, ?)').run(snap.id, req.user.id, Date.now());
+    if (ins.changes) notify({ userId: snap.user_id, actor: req.user, type: 'snap_like', link: '/snap/' + snap.id, snippet: snap.caption });
     on = true;
   }
   const count = db.prepare('SELECT COUNT(*) AS n FROM likes WHERE snap_id = ?').get(snap.id).n;
@@ -161,17 +168,20 @@ router.post('/snap/:id/like', requireLogin, (req, res) => {
 
 // ===== 댓글 =====
 router.post('/snap/:id/comment', requireLogin, (req, res) => {
-  const snap = getSnap(req.params.id, req.user.id);
+  const snap = getSnap(req, req.params.id);
   if (!snap) return notFound(res);
   const body = String(req.body.body || '').trim();
   if (body && body.length <= 1000 && !cooldown('comment:' + req.user.id, 1500)) {
     db.prepare('INSERT INTO comments (snap_id, user_id, body, created_at) VALUES (?, ?, ?, ?)').run(snap.id, req.user.id, body, Date.now());
+    const link = '/snap/' + snap.id + '#comments';
+    notify({ userId: snap.user_id, actor: req.user, type: 'snap_comment', link, snippet: body });
+    notifyMentions(body, req.user, link, [snap.user_id]);
   }
   res.redirect('/snap/' + snap.id + '#comments');
 });
 
 router.post('/snap/:id/comments/:cid/delete', requireLogin, (req, res) => {
-  const snap = getSnap(req.params.id, req.user.id);
+  const snap = getSnap(req, req.params.id);
   if (!snap) return notFound(res);
   const c = db.prepare('SELECT * FROM comments WHERE id = ? AND snap_id = ?').get(toInt(req.params.cid) || 0, snap.id);
   if (c && (c.user_id === req.user.id || snap.user_id === req.user.id)) db.prepare('DELETE FROM comments WHERE id = ?').run(c.id);
@@ -179,7 +189,7 @@ router.post('/snap/:id/comments/:cid/delete', requireLogin, (req, res) => {
 });
 
 router.post('/snap/:id/delete', requireLogin, (req, res) => {
-  const snap = getSnap(req.params.id, req.user.id);
+  const snap = getSnap(req, req.params.id);
   if (!snap) return notFound(res);
   if (snap.user_id !== req.user.id) return res.status(403).render('error', { title: '403', message: '내 스냅만 지울 수 있어요.' });
   db.prepare('DELETE FROM snaps WHERE id = ?').run(snap.id);
@@ -191,9 +201,9 @@ router.post('/snap/:id/delete', requireLogin, (req, res) => {
 function getMember(username) {
   return db
     .prepare(
-      `SELECT u.id, u.username, u.display_name, u.bio, u.avatar, u.created_at,
-        (SELECT COUNT(*) FROM snaps s WHERE s.user_id = u.id) AS snap_count,
-        (SELECT COUNT(*) FROM talks t WHERE t.user_id = u.id) AS talk_count,
+      `SELECT u.id, u.username, u.display_name, u.bio, u.avatar, u.created_at, u.role, u.banned_at, u.ban_reason,
+        (SELECT COUNT(*) FROM snaps s WHERE s.user_id = u.id AND s.hidden_at IS NULL) AS snap_count,
+        (SELECT COUNT(*) FROM talks t WHERE t.user_id = u.id AND t.hidden_at IS NULL) AS talk_count,
         (SELECT COUNT(*) FROM follows f WHERE f.followee_id = u.id) AS followers,
         (SELECT COUNT(*) FROM follows f WHERE f.follower_id = u.id) AS following
        FROM users u WHERE u.username = ?`
@@ -210,17 +220,17 @@ router.get('/@:username', (req, res) => {
     ? !!db.prepare('SELECT 1 FROM follows WHERE follower_id = ? AND followee_id = ?').get(req.user.id, member.id)
     : false;
   const snaps = tab === 'snap'
-    ? db.prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id WHERE s.user_id = ? ORDER BY s.id DESC LIMIT 60`)
+    ? db.prepare(`SELECT ${SNAP_COLS} FROM snaps s JOIN users u ON u.id = s.user_id WHERE s.user_id = ? AND s.hidden_at IS NULL ORDER BY s.id DESC LIMIT 60`)
         .all(viewer(req), member.id)
     : [];
   const talks = tab === 'talk'
     ? db.prepare(
         `SELECT t.id, t.title, t.fire, t.ice, t.views, t.created_at, r.slug, r.name AS rname, r.emoji,
-          (SELECT COUNT(*) FROM talk_comments c WHERE c.talk_id = t.id) AS ccount
-         FROM talks t JOIN rooms r ON r.id = t.room_id WHERE t.user_id = ? ORDER BY t.id DESC LIMIT 50`
+          (SELECT COUNT(*) FROM talk_comments c WHERE c.talk_id = t.id AND c.hidden_at IS NULL) AS ccount
+         FROM talks t JOIN rooms r ON r.id = t.room_id WHERE t.user_id = ? AND t.hidden_at IS NULL ORDER BY t.id DESC LIMIT 50`
       ).all(member.id)
     : [];
-  res.render('member', { title: `${member.display_name} (@${member.username})`, member, tab, isMe, following, snaps, talks, threshold: HOT_THRESHOLD });
+  res.render('member', { title: `${member.display_name} (@${member.username})`, member, tab, isMe, following, snaps, talks, threshold: HOT_THRESHOLD, hasStory: hasActiveStory(member.id) });
 });
 
 router.get('/@:username/:list', (req, res, next) => {
@@ -244,7 +254,10 @@ router.post('/@:username/follow', requireLogin, (req, res) => {
   if (member.id !== req.user.id) {
     const exists = db.prepare('SELECT 1 FROM follows WHERE follower_id = ? AND followee_id = ?').get(req.user.id, member.id);
     if (exists) db.prepare('DELETE FROM follows WHERE follower_id = ? AND followee_id = ?').run(req.user.id, member.id);
-    else db.prepare('INSERT INTO follows (follower_id, followee_id, created_at) VALUES (?, ?, ?)').run(req.user.id, member.id, Date.now());
+    else {
+      db.prepare('INSERT INTO follows (follower_id, followee_id, created_at) VALUES (?, ?, ?)').run(req.user.id, member.id, Date.now());
+      notify({ userId: member.id, actor: req.user, type: 'follow', link: '/@' + req.user.username });
+    }
     if (wantsJson(req)) {
       const followers = db.prepare('SELECT COUNT(*) AS n FROM follows WHERE followee_id = ?').get(member.id).n;
       return res.json({ following: !exists, followers });

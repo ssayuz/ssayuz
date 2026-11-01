@@ -1,6 +1,7 @@
 <%- include('../partials/header') %>
 <div class="feed-layout">
   <div class="feed-col">
+    <%- include('../partials/storytray', { tray }) %>
     <% if (snaps.length === 0) { %>
       <section class="box box-pad-lg center">
         <h2 class="h2">아직 비어 있어요</h2>

@@ -1,0 +1,31 @@
+<%- include('../partials/header') %>
+<section class="box narrow-wide chat" data-partner="<%= other.username %>" data-me="<%= user.id %>">
+  <div class="box-head">
+    <div class="row">
+      <a href="/dm" class="bold" aria-label="메시지 목록">←</a>
+      <a href="/@<%= other.username %>"><img class="av av-36" src="<%= avatar(other) %>" alt=""></a>
+      <div><a class="bold" href="/@<%= other.username %>">@<%= other.username %></a><div class="tiny muted light"><%= other.display_name %></div></div>
+    </div>
+  </div>
+  <% if (error) { %><div class="alert chat-alert"><%= error %></div><% } %>
+  <div class="chat-log" id="chat-log">
+    <% if (messages.length === 0) { %><div class="empty small chat-empty">첫 메시지를 보내 보세요 👋</div><% } %>
+    <% messages.forEach(m => { %>
+      <div class="msg <%= m.sender_id === user.id ? 'mine' : 'theirs' %>" data-id="<%= m.id %>">
+        <div class="msg-body"><%= m.body %></div>
+        <div class="msg-meta"><%= shortTime(m.created_at) %><% if (m.sender_id === user.id) { %> <span class="msg-read"><%= m.read_at ? '읽음' : '' %></span><% } %></div>
+      </div>
+    <% }) %>
+    <span id="end"></span>
+  </div>
+  <% if (other.banned_at) { %>
+    <div class="empty small">이용이 제한된 사람이라 메시지를 보낼 수 없어요.</div>
+  <% } else { %>
+  <form method="post" action="/dm/@<%= other.username %>" class="chat-form">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <textarea name="body" rows="1" maxlength="1000" required placeholder="메시지 보내기..." aria-label="메시지"></textarea>
+    <button class="btn btn-ink">보내기</button>
+  </form>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

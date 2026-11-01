@@ -5,21 +5,32 @@ const { hashPassword, verifyPassword, requireLogin } = require('../auth');
 const { images: uploadImages, removeFiles } = require('../upload');
 const { ipPrefix, likeEscape, toInt, cooldown, images } = require('../helpers');
 const { HOT_THRESHOLD, TALK_PAGE_SIZE, TOPICS } = require('../config');
+const { ipHash, isIpBanned, visible } = require('../moderation');
+const { notify } = require('../notify');
 
 const router = express.Router();
+
+// 차단된 손님 IP는 글쓰기·댓글·반응 불가
+router.use((req, res, next) => {
+  if (req.method === 'POST' && !req.user && isIpBanned(req.ip)) {
+    return res.status(403).render('error', { title: '이용 제한', message: '관리자가 이 IP의 글쓰기를 막아 두었어요.' });
+  }
+  next();
+});
+
 const SLUG_RE = /^[a-z0-9_]{2,20}$/;
 const ROOM_EMOJIS = ['💬', '🔥', '🎧', '🎬', '📚', '⚽', '🎨', '💸', '✈️', '🌱', '🧪', '🍀'];
 
 const notFound = (res, message = '여긴 아무것도 없어요.') => res.status(404).render('error', { title: '404', message });
 const getRoom = (slug) => db.prepare('SELECT * FROM rooms WHERE slug = ?').get(String(slug));
 
-function getTalk(room, id) {
+function getTalk(room, id, req) {
   const tid = toInt(id);
   if (!tid) return null;
   return db
     .prepare(
       `SELECT t.*, u.username, u.display_name, u.avatar FROM talks t LEFT JOIN users u ON u.id = t.user_id
-       WHERE t.id = ? AND t.room_id = ?`
+       WHERE t.id = ? AND t.room_id = ? AND ${visible(req, 't')}`
     )
     .get(tid, room.id);
 }
@@ -28,12 +39,12 @@ const voterKey = (req) => (req.user ? 'u:' + req.user.id : 'ip:' + req.ip);
 
 // 단골(로그인)이면 계정으로, 손님이면 닉네임 + 비밀번호 + IP 앞자리
 function authorFields(req) {
-  if (req.user) return { user_id: req.user.id, nickname: req.user.display_name, password_hash: null, ip_prefix: null };
+  if (req.user) return { user_id: req.user.id, nickname: req.user.display_name, password_hash: null, ip_prefix: null, ip_hash: null };
   const nickname = String(req.body.nickname || '').trim() || '손님';
   const password = String(req.body.password || '');
   if (nickname.length > 20) return { error: '닉네임은 20자 이하로 해 주세요.' };
   if (password.length < 2 || password.length > 100) return { error: '비밀번호를 2자 이상 적어 주세요. 지울 때 필요해요.' };
-  return { user_id: null, nickname, password_hash: hashPassword(password), ip_prefix: ipPrefix(req.ip) };
+  return { user_id: null, nickname, password_hash: hashPassword(password), ip_prefix: ipPrefix(req.ip), ip_hash: ipHash(req.ip) };
 }
 
 function canManage(req, item, password) {
@@ -47,8 +58,8 @@ router.get('/', (req, res) => {
   const rooms = db
     .prepare(
       `SELECT r.*,
-        (SELECT COUNT(*) FROM talks t WHERE t.room_id = r.id) AS total,
-        (SELECT COUNT(*) FROM talks t WHERE t.room_id = r.id AND t.created_at > ?) AS today
+        (SELECT COUNT(*) FROM talks t WHERE t.room_id = r.id AND t.hidden_at IS NULL) AS total,
+        (SELECT COUNT(*) FROM talks t WHERE t.room_id = r.id AND t.hidden_at IS NULL AND t.created_at > ?) AS today
        FROM rooms r ORDER BY r.is_user, today DESC, total DESC, r.id`
     )
     .all(dayAgo);
@@ -91,7 +102,7 @@ router.get('/:slug', (req, res) => {
   const q = String(req.query.q || '').trim().slice(0, 50);
   const page = toInt(req.query.page) || 1;
 
-  const where = ['t.room_id = ?'];
+  const where = ['t.room_id = ?', visible(req, 't')];
   const args = [room.id];
   if (sort === 'hot') { where.push('t.fire - t.ice >= ?'); args.push(HOT_THRESHOLD); }
   if (topic) { where.push('t.topic = ?'); args.push(topic); }
@@ -105,8 +116,8 @@ router.get('/:slug', (req, res) => {
   const talks = db
     .prepare(
       `SELECT t.id, t.topic, t.title, substr(t.body, 1, 120) AS excerpt, t.nickname, t.ip_prefix, t.user_id,
-        t.views, t.fire, t.ice, t.created_at, t.images, u.username, u.display_name, u.avatar,
-        (SELECT COUNT(*) FROM talk_comments c WHERE c.talk_id = t.id) AS ccount
+        t.views, t.fire, t.ice, t.created_at, t.images, t.hidden_at, u.username, u.display_name, u.avatar,
+        (SELECT COUNT(*) FROM talk_comments c WHERE c.talk_id = t.id AND c.hidden_at IS NULL) AS ccount
        FROM talks t LEFT JOIN users u ON u.id = t.user_id
        WHERE ${whereSql} ORDER BY t.id DESC LIMIT ? OFFSET ?`
     )
@@ -151,10 +162,10 @@ router.post('/:slug/write', (req, res, next) => {
 
   const r = db
     .prepare(
-      `INSERT INTO talks (room_id, user_id, nickname, password_hash, ip_prefix, topic, title, body, images, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO talks (room_id, user_id, nickname, password_hash, ip_prefix, ip_hash, topic, title, body, images, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .run(room.id, a.user_id, a.nickname, a.password_hash, a.ip_prefix, topic, title, body, JSON.stringify(req.uploaded), Date.now());
+    .run(room.id, a.user_id, a.nickname, a.password_hash, a.ip_prefix, a.ip_hash, topic, title, body, JSON.stringify(req.uploaded), Date.now());
   res.redirect(`/talk/${room.slug}/${r.lastInsertRowid}`);
 });
 
@@ -162,21 +173,21 @@ router.post('/:slug/write', (req, res, next) => {
 router.get('/:slug/:id', (req, res) => {
   const room = getRoom(req.params.slug);
   if (!room) return notFound(res, '없는 방이에요.');
-  const talk = getTalk(room, req.params.id);
-  if (!talk) return notFound(res, '지워졌거나 없는 글이에요.');
+  const talk = getTalk(room, req.params.id, req);
+  if (!talk) return notFound(res, '지워졌거나 숨겨진 글이에요.');
 
   db.prepare('UPDATE talks SET views = views + 1 WHERE id = ?').run(talk.id);
   talk.views += 1;
   const comments = db
     .prepare(
       `SELECT c.*, u.username, u.display_name, u.avatar FROM talk_comments c LEFT JOIN users u ON u.id = c.user_id
-       WHERE c.talk_id = ? ORDER BY c.id`
+       WHERE c.talk_id = ? AND ${visible(req, 'c')} ORDER BY c.id`
     )
     .all(talk.id);
   const myVote = db.prepare('SELECT dir FROM talk_votes WHERE talk_id = ? AND voter = ?').get(talk.id, voterKey(req));
   const around = db
     .prepare(
-      `SELECT id, title, fire, ice FROM talks WHERE room_id = ? AND id != ? ORDER BY ABS(id - ?) LIMIT 4`
+      `SELECT id, title, fire, ice FROM talks WHERE room_id = ? AND id != ? AND hidden_at IS NULL ORDER BY ABS(id - ?) LIMIT 4`
     )
     .all(room.id, talk.id, talk.id);
 
@@ -194,18 +205,23 @@ router.get('/:slug/:id', (req, res) => {
 // ===== 🔥 불지피기 / 🧊 찬물 =====
 router.post('/:slug/:id/vote', (req, res) => {
   const room = getRoom(req.params.slug);
-  const talk = room && getTalk(room, req.params.id);
+  const talk = room && getTalk(room, req.params.id, req);
   if (!talk) return notFound(res);
   const dir = req.body.dir === 'ice' ? -1 : 1;
   const r = db.prepare('INSERT OR IGNORE INTO talk_votes (talk_id, voter, dir, created_at) VALUES (?, ?, ?, ?)').run(talk.id, voterKey(req), dir, Date.now());
-  if (r.changes) db.prepare(`UPDATE talks SET ${dir === 1 ? 'fire = fire + 1' : 'ice = ice + 1'} WHERE id = ?`).run(talk.id);
+  if (r.changes) {
+    db.prepare(`UPDATE talks SET ${dir === 1 ? 'fire = fire + 1' : 'ice = ice + 1'} WHERE id = ?`).run(talk.id);
+    if (dir === 1) {
+      notify({ userId: talk.user_id, actor: req.user, actorName: '손님', type: 'talk_fire', link: `/talk/${room.slug}/${talk.id}`, snippet: talk.title });
+    }
+  }
   res.redirect(`/talk/${room.slug}/${talk.id}${r.changes ? '' : '?msg=voted'}#heat`);
 });
 
 // ===== 댓글 =====
 router.post('/:slug/:id/comment', (req, res) => {
   const room = getRoom(req.params.slug);
-  const talk = room && getTalk(room, req.params.id);
+  const talk = room && getTalk(room, req.params.id, req);
   if (!talk) return notFound(res);
   const body = String(req.body.body || '').trim();
   const back = (msg) => res.redirect(`/talk/${room.slug}/${talk.id}${msg ? '?msg=' + msg : ''}#comments`);
@@ -214,14 +230,15 @@ router.post('/:slug/:id/comment', (req, res) => {
   if (a.error) return back('comment_pw');
   if (cooldown('tcomment:' + (req.user ? 'u' + req.user.id : req.ip), 3000)) return back('slow');
   db.prepare(
-    'INSERT INTO talk_comments (talk_id, user_id, nickname, password_hash, ip_prefix, body, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  ).run(talk.id, a.user_id, a.nickname, a.password_hash, a.ip_prefix, body, Date.now());
+    'INSERT INTO talk_comments (talk_id, user_id, nickname, password_hash, ip_prefix, ip_hash, body, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).run(talk.id, a.user_id, a.nickname, a.password_hash, a.ip_prefix, a.ip_hash, body, Date.now());
+  notify({ userId: talk.user_id, actor: req.user, actorName: a.nickname, type: 'talk_comment', link: `/talk/${room.slug}/${talk.id}#comments`, snippet: body });
   back();
 });
 
 router.post('/:slug/:id/comments/:cid/delete', (req, res) => {
   const room = getRoom(req.params.slug);
-  const talk = room && getTalk(room, req.params.id);
+  const talk = room && getTalk(room, req.params.id, req);
   if (!talk) return notFound(res);
   const c = db.prepare('SELECT * FROM talk_comments WHERE id = ? AND talk_id = ?').get(toInt(req.params.cid) || 0, talk.id);
   if (!c) return res.redirect(`/talk/${room.slug}/${talk.id}#comments`);
@@ -233,7 +250,7 @@ router.post('/:slug/:id/comments/:cid/delete', (req, res) => {
 // ===== 글 지우기 =====
 router.post('/:slug/:id/delete', (req, res) => {
   const room = getRoom(req.params.slug);
-  const talk = room && getTalk(room, req.params.id);
+  const talk = room && getTalk(room, req.params.id, req);
   if (!talk) return notFound(res);
   if (!canManage(req, talk, req.body.password)) return res.redirect(`/talk/${room.slug}/${talk.id}?msg=bad_pw`);
   db.prepare('DELETE FROM talks WHERE id = ?').run(talk.id);

@@ -1,15 +1,25 @@
 <%- include('../partials/header') %>
 <div class="snap-detail">
+  <% if (snap.hidden_at) { %><div class="alert">🛡 관리자가 숨긴 스냅이에요. 관리자에게만 보여요.</div><% } %>
   <%- include('../partials/snapcard', { s: snap, full: true }) %>
+  <% if (isAdmin) { %>
+    <div class="box admin-bar admin-box">
+      <b>🛡 관리</b>
+      <%- include('../partials/hidebtn', { kind: 'snap', id: snap.id, hidden: snap.hidden_at, back: '/snap/' + snap.id }) %>
+      <a class="btn btn-sm btn-admin" href="/@<%= snap.username %>#admin">작성자 관리</a>
+    </div>
+  <% } %>
   <section class="box box-pad" id="comments">
     <h2 class="box-title">💬 댓글 <%= snap.ccount %></h2>
     <% if (snap.comment_list.length === 0) { %><div class="empty small">첫 댓글을 남겨 보세요.</div><% } %>
     <% snap.comment_list.forEach(c => { %>
-      <div class="say-row">
+      <div class="say-row <%= c.hidden_at ? 'is-hidden-item' : '' %>">
         <a href="/@<%= c.username %>"><img class="av av-36" src="<%= avatar(c) %>" alt=""></a>
         <div class="grow">
           <p><a class="bold" href="/@<%= c.username %>">@<%= c.username %></a> <%- richText(c.body) %></p>
           <span class="tiny muted light"><%= ago(c.created_at) %></span>
+          <% if (c.hidden_at) { %><span class="tag tag-hot">숨김</span><% } %>
+          <%- include('../partials/hidebtn', { kind: 'scomment', id: c.id, hidden: c.hidden_at, back: '/snap/' + snap.id + '#comments', small: true }) %>
         </div>
         <% if (user && (user.id === c.user_id || user.id === snap.user_id)) { %>
           <form method="post" action="/snap/<%= snap.id %>/comments/<%= c.id %>/delete" class="inline" data-confirm="댓글을 지울까요?">

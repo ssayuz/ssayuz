@@ -108,7 +108,99 @@ CREATE TABLE IF NOT EXISTS follows (
   PRIMARY KEY (follower_id, followee_id)
 );
 CREATE INDEX IF NOT EXISTS idx_follows_followee ON follows(followee_id);
+
+-- ===== 스토리 (24시간 뒤 사라짐) =====
+CREATE TABLE IF NOT EXISTS stories (
+  id         INTEGER PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  image      TEXT NOT NULL,
+  caption    TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_stories_user ON stories(user_id, created_at);
+
+CREATE TABLE IF NOT EXISTS story_views (
+  story_id   INTEGER NOT NULL REFERENCES stories(id) ON DELETE CASCADE,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (story_id, user_id)
+);
+
+-- ===== 알림 =====
+CREATE TABLE IF NOT EXISTS notifications (
+  id         INTEGER PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  actor_id   INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  actor_name TEXT NOT NULL,
+  type       TEXT NOT NULL,
+  link       TEXT NOT NULL,
+  snippet    TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL,
+  read_at    INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, id DESC);
+
+-- ===== DM =====
+CREATE TABLE IF NOT EXISTS dm_threads (
+  id      INTEGER PRIMARY KEY,
+  user_a  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_b  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  last_at INTEGER NOT NULL,
+  UNIQUE (user_a, user_b)
+);
+CREATE TABLE IF NOT EXISTS dm_messages (
+  id         INTEGER PRIMARY KEY,
+  thread_id  INTEGER NOT NULL REFERENCES dm_threads(id) ON DELETE CASCADE,
+  sender_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  body       TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  read_at    INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_dm_messages_thread ON dm_messages(thread_id, id);
+
+-- ===== 관리 =====
+CREATE TABLE IF NOT EXISTS ip_bans (
+  id         INTEGER PRIMARY KEY,
+  ip_hash    TEXT NOT NULL UNIQUE,
+  ip_prefix  TEXT,
+  reason     TEXT NOT NULL DEFAULT '',
+  admin_id   INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS admin_log (
+  id         INTEGER PRIMARY KEY,
+  admin_id   INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  action     TEXT NOT NULL,
+  target     TEXT NOT NULL,
+  note       TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
 `);
+
+// 기존 DB에 새 열 추가 (마이그레이션)
+function addColumn(table, column, def) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+  if (!cols.includes(column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${def}`);
+}
+addColumn('users', 'role', "TEXT NOT NULL DEFAULT 'user'");
+addColumn('users', 'banned_at', 'INTEGER');
+addColumn('users', 'ban_reason', "TEXT NOT NULL DEFAULT ''");
+addColumn('talks', 'ip_hash', 'TEXT');
+addColumn('talk_comments', 'ip_hash', 'TEXT');
+for (const t of ['talks', 'talk_comments', 'snaps', 'comments']) addColumn(t, 'hidden_at', 'INTEGER');
+
+// 손님 IP 차단용 해시 소금 (DB에 한 번 만들어 둠)
+if (!db.prepare("SELECT 1 FROM settings WHERE key = 'ip_salt'").get()) {
+  db.prepare("INSERT INTO settings (key, value) VALUES ('ip_salt', ?)").run(require('crypto').randomBytes(16).toString('hex'));
+}
+
+// ADMIN_USERNAMES=alice,bob 이면 관리자로 지정
+const admins = String(process.env.ADMIN_USERNAMES || '').split(',').map((s) => s.trim()).filter(Boolean);
+for (const name of admins) db.prepare("UPDATE users SET role = 'admin' WHERE username = ?").run(name);
 
 // 기본 공식 방
 const defaults = [
