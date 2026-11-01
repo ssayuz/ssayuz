@@ -48,13 +48,13 @@
     <% } %>
   </div>
   <nav class="feed-tabs in-profile">
-    <a href="/@<%= member.username %>" class="<%= tab === 'threads' ? 'on' : '' %>">스레드</a>
+    <a href="/@<%= member.username %>" class="<%= tab === 'threads' ? 'on' : '' %>">Snippet</a>
     <a href="/@<%= member.username %>?tab=replies" class="<%= tab === 'replies' ? 'on' : '' %>">답글</a>
     <a href="/@<%= member.username %>?tab=reposts" class="<%= tab === 'reposts' ? 'on' : '' %>">리포스트</a>
   </nav>
   <% if (isMe && tab === 'threads') { %><%- include('partials/composer', { cfg: { compact: true, id: 'profile-composer' } }) %><% } %>
   <% if (posts.length === 0) { %>
-    <div class="empty"><%= tab === 'threads' ? '아직 스레드가 없어요.' : tab === 'replies' ? '아직 답글이 없어요.' : '아직 리포스트한 스레드가 없어요.' %></div>
+    <div class="empty"><%= tab === 'threads' ? '아직 Snippet이 없어요.' : tab === 'replies' ? '아직 답글이 없어요.' : '아직 리포스트한 Snippet이 없어요.' %></div>
   <% } %>
   <% posts.forEach(p => { %><%- include('partials/post', { p, opts: { showParent: tab === 'replies', repostedBy: tab === 'reposts' ? member.username : null } }) %><% }) %>
 </section>

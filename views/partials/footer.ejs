@@ -3,7 +3,7 @@
 <nav class="dock" aria-label="빠른 이동">
   <a href="/" class="<%= path === '/' ? 'on' : '' %>"><%- icon('home', 26) %><span class="sr">홈</span></a>
   <a href="/search" class="<%= path.startsWith('/search') ? 'on' : '' %>"><%- icon('search', 26) %><span class="sr">검색</span></a>
-  <a href="/compose" class="dock-plus"><%- icon('plus', 26) %><span class="sr">새 스레드</span></a>
+  <a href="/compose" class="dock-plus"><%- icon('plus', 26) %><span class="sr">새 Snippet</span></a>
   <a href="/activity" class="<%= path.startsWith('/activity') ? 'on' : '' %>"><%- icon('heart', 26) %><% if (unreadNotes) { %><span class="badge"><%= unreadNotes > 99 ? '99+' : unreadNotes %></span><% } %><span class="sr">활동</span></a>
   <a href="<%= user ? '/@' + user.username : '/login' %>" class="<%= user && path.startsWith('/@' + user.username) ? 'on' : '' %>"><%- icon('user', 26) %><span class="sr">프로필</span></a>
 </nav>

@@ -13,7 +13,7 @@
         <div class="part-av"><%- avatar(user, 40) %></div>
         <div class="part-main">
           <div class="part-head"><b><%= user.display_name %></b><% if (i > 0) { %><button type="button" class="linkbtn tiny part-remove">빼기</button><% } %></div>
-          <textarea name="body" rows="<%= c.compact ? 2 : 3 %>" placeholder="<%= c.placeholder || (i === 0 ? '무슨 생각 해요?' : '이어서 쓰기...') %>" aria-label="스레드 내용"><%= t %></textarea>
+          <textarea name="body" rows="<%= c.compact ? 2 : 3 %>" placeholder="<%= c.placeholder || (i === 0 ? '무슨 생각 해요?' : '이어서 쓰기...') %>" aria-label="Snippet 내용"><%= t %></textarea>
           <div class="part-foot"><span class="count"></span></div>
         </div>
       </div>
@@ -21,7 +21,7 @@
   </div>
   <% if (c.quoteHtml) { %><div class="composer-quote"><%- c.quoteHtml %></div><% } %>
   <div class="composer-bar">
-    <button type="button" class="linkbtn add-part"><%- icon('plus', 16) %> 스레드에 추가</button>
+    <button type="button" class="linkbtn add-part"><%- icon('plus', 16) %> 이어서 쓰기</button>
     <span class="grow"></span>
     <% if (!c.parentId) { %>
       <label class="policy"><span class="sr">답글 허용 범위</span>

@@ -2,7 +2,7 @@
 <section class="feed">
   <form class="searchbox" action="/search" method="get" role="search">
     <%- icon('search', 20) %>
-    <input type="search" name="q" value="<%= q %>" placeholder="사람, 스레드, #태그 검색" aria-label="검색" autofocus>
+    <input type="search" name="q" value="<%= q %>" placeholder="사람, Snippet, #태그 검색" aria-label="검색" autofocus>
   </form>
   <% if (people.length) { %>
     <% if (q) { %><div class="section-label">사람</div><% } else { %><div class="section-label">팔로우 추천</div><% } %>
@@ -17,8 +17,8 @@
     <% }) %>
   <% } %>
   <% if (q) { %>
-    <div class="section-label">스레드</div>
-    <% if (posts.length === 0) { %><div class="empty">'<%= q %>'에 맞는 스레드가 없어요.</div><% } %>
+    <div class="section-label">Snippet</div>
+    <% if (posts.length === 0) { %><div class="empty">'<%= q %>'에 맞는 Snippet이 없어요.</div><% } %>
     <% posts.forEach(p => { %><%- include('partials/post', { p, opts: { showParent: true } }) %><% }) %>
   <% } %>
 </section>

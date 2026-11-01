@@ -1,5 +1,5 @@
 <%- include('partials/header') %>
-<div class="page-head"><a class="icon-btn" href="/" data-back aria-label="뒤로"><%- icon('back') %></a><h1 class="page-title">스레드</h1><span class="icon-btn"></span></div>
+<div class="page-head"><a class="icon-btn" href="/" data-back aria-label="뒤로"><%- icon('back') %></a><h1 class="page-title">Snippet</h1><span class="icon-btn"></span></div>
 <section class="feed">
   <% ancestors.forEach(a => { %><%- include('partials/post', { p: a, opts: { line: true } }) %><% }) %>
   <%- include('partials/post', { p: post, opts: { big: true } }) %>

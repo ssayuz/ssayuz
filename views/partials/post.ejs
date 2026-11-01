@@ -3,9 +3,9 @@
   const link = '/@' + p.username + '/post/' + p.id;
 %>
 <% if (p.missing) { %>
-  <div class="post post-gone <%= o.line ? 'has-line' : '' %>"><div class="post-grid"><span class="post-av"><span class="av av-40 av-ghost">?</span></span><div class="post-main muted">볼 수 없는 스레드예요.</div></div></div>
+  <div class="post post-gone <%= o.line ? 'has-line' : '' %>"><div class="post-grid"><span class="post-av"><span class="av av-40 av-ghost">?</span></span><div class="post-main muted">볼 수 없는 Snippet이에요.</div></div></div>
 <% } else if (p.deleted_at) { %>
-  <div class="post post-gone <%= o.line ? 'has-line' : '' %>" id="post-<%= p.id %>"><div class="post-grid"><span class="post-av"><span class="av av-40 av-ghost">×</span></span><div class="post-main muted">작성자가 삭제한 스레드예요.</div></div></div>
+  <div class="post post-gone <%= o.line ? 'has-line' : '' %>" id="post-<%= p.id %>"><div class="post-grid"><span class="post-av"><span class="av av-40 av-ghost">×</span></span><div class="post-main muted">작성자가 삭제한 Snippet이에요.</div></div></div>
 <% } else { %>
 <article class="post <%= o.big ? 'post-big' : '' %> <%= o.line ? 'has-line' : '' %> <%= p.hidden_at ? 'is-hidden' : '' %>" id="post-<%= p.id %>" data-href="<%= link %>">
   <% if (o.repostedBy) { %><div class="repost-by"><%- icon('repost', 15) %> @<%= o.repostedBy %>님이 리포스트함</div><% } %>
@@ -23,7 +23,7 @@
           <div class="menu-pop">
             <button type="button" class="menu-item" data-copy="<%= siteUrl + link %>"><%- icon('link', 18) %> 링크 복사</button>
             <% if (user && user.id === p.user_id) { %>
-              <form method="post" action="/post/<%= p.id %>/delete" data-confirm="이 스레드를 삭제할까요?">
+              <form method="post" action="/post/<%= p.id %>/delete" data-confirm="이 Snippet을 삭제할까요?">
                 <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="menu-item danger">삭제</button>
               </form>
             <% } %>

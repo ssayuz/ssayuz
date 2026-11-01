@@ -1,5 +1,5 @@
 <% if (q.missing) { %>
-  <div class="quote quote-missing">볼 수 없는 스레드예요.</div>
+  <div class="quote quote-missing">볼 수 없는 Snippet이에요.</div>
 <% } else { %>
   <a class="quote" href="/@<%= q.username %>/post/<%= q.id %>">
     <span class="quote-head"><%- avatar(q, 20) %><b><%= q.display_name %></b><span class="handle">@<%= q.username %></span><span class="muted">· <%= ago(q.created_at) %></span></span>

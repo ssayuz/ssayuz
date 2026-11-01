@@ -10,14 +10,14 @@
     <div class="welcome">
       <span class="logo big">ssayuz</span>
       <h1 class="h2">짧게 말하고, 길게 이어지는 곳</h1>
-      <p class="muted">500자 스레드로 생각을 나누고, 답글로 대화해요.</p>
+      <p class="muted">500자 Snippet으로 생각을 나누고, 답글로 대화해요.</p>
       <div class="row centered"><a class="btn btn-ink" href="/signup">가입하기</a><a class="btn" href="/login">로그인</a></div>
     </div>
   <% } %>
   <% if (items.length === 0) { %>
     <div class="empty">
-      <% if (tab === 'following') { %>팔로우한 사람의 스레드가 아직 없어요.<br><a class="bold" href="/search">사람 찾아보기 →</a>
-      <% } else { %>아직 스레드가 없어요. 첫 스레드를 올려 보세요!<% } %>
+      <% if (tab === 'following') { %>팔로우한 사람의 Snippet이 아직 없어요.<br><a class="bold" href="/search">사람 찾아보기 →</a>
+      <% } else { %>아직 Snippet이 없어요. 첫 Snippet을 올려 보세요!<% } %>
     </div>
   <% } %>
   <% items.forEach((it, i) => { %>

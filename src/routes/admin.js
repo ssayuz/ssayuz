@@ -1,4 +1,4 @@
-// 관리자: 스레드 숨기기, 계정 차단, 관리 기록
+// 관리자: Snippet 숨기기, 계정 차단, 관리 기록
 const express = require('express');
 const db = require('../db');
 const { requireAdmin, safeNext } = require('../auth');
@@ -40,14 +40,14 @@ router.get('/admin', (req, res) => {
   res.render('admin', { title: '관리', tab, q, stats, ...data });
 });
 
-// 스레드 숨기기 / 복구 (토글)
+// Snippet 숨기기 / 복구 (토글)
 router.post('/admin/hide', (req, res) => {
   const id = toInt(req.body.id);
   const row = id && db.prepare('SELECT hidden_at FROM posts WHERE id = ?').get(id);
   if (row) {
     const hide = !row.hidden_at;
     db.prepare('UPDATE posts SET hidden_at = ? WHERE id = ?').run(hide ? Date.now() : null, id);
-    logAction(req.user.id, hide ? '숨김' : '복구', `스레드 #${id}`);
+    logAction(req.user.id, hide ? '숨김' : '복구', `Snippet #${id}`);
   }
   res.redirect(back(req));
 });

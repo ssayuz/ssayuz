@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at INTEGER NOT NULL
 );
 
--- ===== 스레드 (글) =====
+-- ===== Snippet (글) =====
 -- parent_id: 답글이면 원글, root_id: 대화의 맨 첫 글, quote_id: 인용한 글
 -- reply_policy: all | following(작성자가 팔로우한 사람) | mentioned(글에서 언급한 사람)
 CREATE TABLE IF NOT EXISTS posts (

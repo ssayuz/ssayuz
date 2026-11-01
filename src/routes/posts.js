@@ -1,4 +1,4 @@
-// 스레드: 피드, 글쓰기(이어 쓰기), 답글, 좋아요, 리포스트, 인용, 검색
+// Snippet: 피드, 글쓰기(이어 쓰기), 답글, 좋아요, 리포스트, 인용, 검색
 const express = require('express');
 const db = require('../db');
 const { requireLogin } = require('../auth');
@@ -11,7 +11,7 @@ const router = express.Router();
 const POLICIES = ['all', 'following', 'mentioned'];
 const wantsJson = (req) => req.get('x-csrf-token') !== undefined;
 const viewer = (req) => (req.user ? req.user.id : 0);
-const notFound = (res, message = '스레드를 찾을 수 없어요.') => res.status(404).render('error', { title: '404', message });
+const notFound = (res, message = 'Snippet을 찾을 수 없어요.') => res.status(404).render('error', { title: '404', message });
 
 // ---------- 글 불러오기 ----------
 function selectPosts(req, where, args = [], tail = '') {
@@ -146,7 +146,7 @@ router.get('/compose', requireLogin, (req, res) => {
   if (parent && !canReply(req.user, parent)) {
     return res.status(403).render('error', { title: '답글 제한', message: '작성자가 답글을 달 수 있는 사람을 제한했어요.' });
   }
-  res.render('compose', { title: parent ? '답글 쓰기' : quote ? '인용하기' : '새 스레드', parent, quote, error: null, parts: [''], policy: 'all', POST_MAX, THREAD_MAX_PARTS });
+  res.render('compose', { title: parent ? '답글 쓰기' : quote ? '인용하기' : '새 Snippet', parent, quote, error: null, parts: [''], policy: 'all', POST_MAX, THREAD_MAX_PARTS });
 });
 
 // ---------- 글 올리기 (여러 개 이어 쓰기 가능) ----------
@@ -160,7 +160,7 @@ router.post('/compose', requireLogin, (req, res) => {
 
   const fail = (error, code = 400) =>
     res.status(code).render('compose', {
-      title: '새 스레드', parent, quote, error, parts: raw.length ? raw.map(String) : [''], policy, POST_MAX, THREAD_MAX_PARTS,
+      title: '새 Snippet', parent, quote, error, parts: raw.length ? raw.map(String) : [''], policy, POST_MAX, THREAD_MAX_PARTS,
     });
 
   if (req.body.parent_id && (!parent || parent.deleted_at)) return notFound(res);
@@ -230,7 +230,7 @@ router.get('/@:username/post/:id', (req, res) => {
   replies.sort((a, b) => (b.user_id === post.user_id) - (a.user_id === post.user_id) || b.likes - a.likes || a.created_at - b.created_at);
   hydrate(req, [post, ...ancestors.filter((a) => !a.missing), ...replies]);
   res.render('post', {
-    title: `${post.display_name}: ${post.deleted_at ? '삭제된 스레드' : post.body.slice(0, 40)}`,
+    title: `${post.display_name}: ${post.deleted_at ? '삭제된 Snippet' : post.body.slice(0, 40)}`,
     post, ancestors, replies,
     canReply: canReply(req.user, post),
     POST_MAX,
@@ -265,7 +265,7 @@ router.post('/post/:id/repost', requireLogin, toggle('reposts', 'repost'));
 router.post('/post/:id/delete', requireLogin, (req, res) => {
   const post = getPost(req, req.params.id);
   if (!post) return notFound(res);
-  if (post.user_id !== req.user.id) return res.status(403).render('error', { title: '403', message: '내 스레드만 삭제할 수 있어요.' });
+  if (post.user_id !== req.user.id) return res.status(403).render('error', { title: '403', message: '내 Snippet만 삭제할 수 있어요.' });
   const hasReplies = db.prepare('SELECT 1 FROM posts WHERE parent_id = ?').get(post.id);
   if (hasReplies) {
     // 답글이 달린 글은 대화가 끊기지 않게 자리만 남김
