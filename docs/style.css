@@ -352,3 +352,15 @@ a.person:hover { background: var(--card-2); color: var(--ink); }
 .setup { padding: 28px 24px; line-height: 1.8; }
 .setup code { padding: 2px 6px; border-radius: 6px; background: var(--card-2); font-size: 13px; }
 .composer .alert { margin: 8px 0 0 52px; }
+
+.danger-zone { margin-top: 16px; }
+.danger-zone .h2 { font-size: 16px; margin-bottom: 6px; }
+.check-row { display: flex; align-items: flex-start; gap: 8px; font-weight: 500; font-size: 13px; line-height: 1.5; }
+.check-row input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: var(--violet); }
+.check-row a { color: var(--violet); font-weight: 700; text-decoration: underline; }
+.policy h2 { font-size: 17px; margin: 26px 0 8px; }
+.policy p, .policy li { font-size: 14.5px; line-height: 1.8; }
+.policy ul { padding-left: 20px; margin: 6px 0; }
+.policy-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+.policy-table th, .policy-table td { border: 1px solid var(--hair); padding: 8px; text-align: left; vertical-align: top; }
+.policy-table th { background: var(--card-2); }

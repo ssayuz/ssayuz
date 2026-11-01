@@ -90,3 +90,36 @@ npx supabase start                     # Docker 필요. 로컬 DB + 로그인 �
 npx serve docs -l 8080                 # 또는 아무 정적 서버
 # http://localhost:8080 → config.js 가 자동으로 로컬 Supabase에 연결
 ```
+
+---
+
+## 안드로이드 앱 (APK) — 원스토어 등록용
+
+앱은 **ssayuz.kro.kr 을 앱 화면으로 보여 주는 방식**이에요. 사이트를 고치면 앱도 바로 바뀌어서, 기능을 바꿀 때마다 스토어에 다시 올릴 필요가 없어요. (앱 자체 코드를 바꿀 때만 새 버전 업로드)
+
+- 패키지 이름: `kr.kro.ssayuz` (한 번 등록하면 못 바꿔요)
+- 최소 Android 7.0 (API 24), 대상 Android 15 (API 35)
+- 사이트의 공유 버튼 → 안드로이드 공유 창, 바깥 링크 → 브라우저, 뒤로 가기 버튼 지원, 오프라인 화면
+
+### 서명 키 (가장 중요!)
+
+- `ssayuz-release.jks` + 비밀번호가 있어야 **업데이트**를 올릴 수 있어요. 잃어버리면 같은 앱으로 업데이트 불가.
+- **절대 GitHub에 올리지 마세요.** (`android/.gitignore` 에서 막아 둠) 구글 드라이브 같은 개인 저장소에 두 군데 이상 백업.
+
+### 다시 빌드하기
+
+```bash
+sudo apt install aapt zipalign apksigner dalvik-exchange openjdk-21-jdk-headless
+# android.jar 두 개 (API 35: 자바용, API 33: 리소스용)
+ANDROID_JAR=android-35.jar AAPT_JAR=android-33.jar \
+KEYSTORE=ssayuz-release.jks KS_PASS='비밀번호' \
+VERSION_CODE=2 VERSION_NAME=1.1 ./android/build.sh
+```
+업데이트할 때마다 `VERSION_CODE` 를 1씩 올려야 해요.
+
+### 원스토어 등록 전 체크리스트
+
+1. Supabase SQL Editor 에서 두 줄 설치 SQL을 **한 번 더 실행** (계정 삭제 기능 추가됨)
+2. `docs/privacy.html` 의 **[운영자 이름]**, **[이메일 주소]** 채우기 → 개인정보처리방침 URL: `https://ssayuz.kro.kr/privacy.html`
+3. **HTTPS(자물쇠)가 켜진 뒤** 휴대폰에 APK를 직접 설치해서 가입·글쓰기·뒤로가기·공유 확인
+4. [원스토어 개발자센터](https://dev.onestore.co.kr)에서 앱 등록: APK, 아이콘(512px), 스크린샷, 설명, 개인정보처리방침 URL, 연령 등급

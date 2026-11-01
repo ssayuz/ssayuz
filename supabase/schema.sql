@@ -484,6 +484,20 @@ create policy "dm: 보내기" on public.dm_messages for insert to authenticated
 drop policy if exists "admin_log: 관리자" on public.admin_log;
 create policy "admin_log: 관리자" on public.admin_log for select to authenticated using (is_admin());
 
+-- ---------------------------------------------------------------------
+-- 회원 탈퇴: 내 계정과 내가 쓴 글·좋아요·팔로우·DM·알림을 모두 지움
+-- ---------------------------------------------------------------------
+create or replace function public.delete_my_account()
+returns void language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid();
+begin
+  if me is null then raise exception '로그인이 필요해요.' using errcode = 'P0001'; end if;
+  -- 내 글에 달린 남의 답글은 남기고, 내 글은 자리만 남기지 않고 지움 (답글은 원글 없음으로 표시)
+  delete from auth.users where id = me;  -- profiles → posts, likes, follows, dm, notifications 모두 cascade
+end $$;
+revoke execute on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;
+
 -- =====================================================================
 -- 관리자 지정: 가입한 뒤 아래 줄의 아이디를 바꿔서 SQL Editor에서 실행
 --   update public.profiles set role = 'admin' where username = '내아이디';
