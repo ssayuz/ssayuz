@@ -6,8 +6,8 @@
 // ※ service_role / secret 키는 절대 여기에 넣지 마세요!
 // ===================================================================
 const PRODUCTION = {
-  SUPABASE_URL: 'https://YOUR-PROJECT-ID.supabase.co',
-  SUPABASE_ANON_KEY: 'YOUR-ANON-KEY',
+  SUPABASE_URL: 'https://rmyazxlinbjlvjlorqnn.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_yCtR97chYL00K8fbHq_c_A_9CUm5oYh',
 };
 
 // 내 컴퓨터에서 테스트할 때 (supabase start 로 띄운 로컬 DB, 공개된 데모 키)
