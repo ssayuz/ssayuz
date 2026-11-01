@@ -1,7 +1,7 @@
 /* ssayuz — paper & ink */
-@font-face { font-family: 'GmarketSans'; src: url('/static/fonts/GmarketSansLight.woff') format('woff'); font-weight: 300; font-display: swap; }
-@font-face { font-family: 'GmarketSans'; src: url('/static/fonts/GmarketSansMedium.woff') format('woff'); font-weight: 500; font-display: swap; }
-@font-face { font-family: 'GmarketSans'; src: url('/static/fonts/GmarketSansBold.woff') format('woff'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'GmarketSans'; src: url('fonts/GmarketSansLight.woff') format('woff'); font-weight: 300; font-display: swap; }
+@font-face { font-family: 'GmarketSans'; src: url('fonts/GmarketSansMedium.woff') format('woff'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'GmarketSans'; src: url('fonts/GmarketSansBold.woff') format('woff'); font-weight: 700; font-display: swap; }
 
 :root {
   --paper: #fbf5ea;
@@ -345,3 +345,10 @@ a.person:hover { background: var(--card-2); color: var(--ink); }
   .dock .badge { top: 4px; right: calc(50% - 22px); }
   .toast { bottom: 84px; }
 }
+
+/* ===== 정적 사이트용 추가 ===== */
+.loading { padding: 40px 20px; text-align: center; color: var(--ink-2); }
+.banner { margin: 0 0 14px; padding: 12px 16px 10px; border: var(--bw) solid var(--edge); border-radius: 14px; background: var(--fire-soft); font-size: 14px; font-weight: 700; }
+.setup { padding: 28px 24px; line-height: 1.8; }
+.setup code { padding: 2px 6px; border-radius: 6px; background: var(--card-2); font-size: 13px; }
+.composer .alert { margin: 8px 0 0 52px; }

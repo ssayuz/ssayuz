@@ -1,79 +1,68 @@
 # ssayuz
 
-🌐 **https://ssayuz.kro.kr** · 배포 방법은 [DEPLOY.md](DEPLOY.md)
+🌐 **https://ssayuz.kro.kr** · 올리는 방법은 [DEPLOY.md](DEPLOY.md)
 
 > 짧게 말하고, 길게 이어지는 곳.
 
-ssayuz는 **500자 글(Snippet)** 로 생각을 나누고 **답글**로 대화하는 텍스트 SNS예요. 사진 업로드 없이 글만 있어서 가볍고, 서버에는 DB 파일 하나만 있으면 돼요.
+ssayuz는 **500자 글(Snippet)** 로 생각을 나누고 **답글**로 대화하는 텍스트 SNS예요.
+서버 없이 **GitHub Pages(화면) + Supabase(DB·로그인)** 로 돌아가서 **무료**로 운영할 수 있어요.
 
 ## 기능
 
 **Snippet**
-- 글 하나 최대 500자, 남은 글자 수 표시
-- **Snippet 이어 쓰기**: 한 번에 최대 10개까지 이어서 올리기 (내 글에 내가 답글로 연결)
+- 글 하나 최대 500자, 남은 글자 수 표시, Ctrl(⌘)+Enter로 게시
+- **이어서 쓰기**: 한 번에 최대 10개까지 줄줄이 (내 글에 내가 답글로 연결)
 - 링크, `@멘션`, `#태그` 자동 연결
 - **답글 허용 범위**: 누구나 / 내가 팔로우하는 사람만 / 언급한 사람만
 - 좋아요 ♥, 답글 💬, **리포스트 🔁**, **인용**, 링크 공유
 - 대화 보기: 위로는 원글들, 아래로는 답글들 (작성자의 이어 쓰기가 먼저)
 - 답글이 달린 글을 지우면 "삭제한 Snippet" 자리만 남아 대화가 끊기지 않음
 
-**피드**
-- **추천**: 최근 2주 글을 좋아요·답글·리포스트와 최신순으로 점수 매김
-- **팔로잉**: 내가 팔로우한 사람의 Snippet와 리포스트를 시간순으로
-- 팔로우 추천 카드
-
-**사람**
+**피드 · 사람**
+- 홈 **추천**(반응 + 최신 점수) / **팔로잉**(리포스트 포함), 팔로우 추천
 - 프로필: 이름, 소개, 링크, 팔로워/팔로잉, Snippet / 답글 / 리포스트 탭
 - 프로필 사진 대신 이름 첫 글자 + 아이디마다 다른 색
 - 검색: 사람, Snippet 내용, `#태그`
 
 **활동 · 메시지 · 관리**
-- 활동(알림): 좋아요, 답글, 리포스트, 인용, 팔로우, 멘션
-- DM: 1:1 메시지, 자동 새로고침, 읽음 표시
-- 관리자: Snippet 숨기기/복구, 계정 차단(사유)/해제, 관리 기록 (`/admin`)
+- 활동(알림): 좋아요, 답글, 리포스트, 인용, 팔로우, 멘션 — DB 트리거가 자동으로 만듦
+- DM: 1:1 메시지, 3초마다 새 메시지 확인, 읽음 표시
+- 관리자: Snippet 숨기기/복구, 계정 차단(사유)/해제, 관리 기록
 
 **기타**
-- 가입한 사람만 글쓰기 (보기는 누구나)
-- G마켓 산스, 반응형 (모바일 하단 탭), 다크 모드 자동
-- CSRF 보호, scrypt 비밀번호, CSP, HTML 이스케이프, 도배 방지
+- 아이디 + 비밀번호로 가입 (이메일 필요 없음), 가입한 사람만 글쓰기 / 보기는 누구나
+- G마켓 산스, 반응형(모바일 하단 탭), 다크 모드 자동
 
-## 실행
+## 보안
 
-Node.js **22.13 이상**이 필요해요 (내장 `node:sqlite` 사용).
+브라우저 코드는 누구나 볼 수 있으니, **모든 규칙은 DB(`supabase/schema.sql`)에서** 지켜요.
 
-```bash
-npm install
-npm start          # http://localhost:3000
-npm run dev        # 파일이 바뀌면 자동 재시작
+- Row Level Security: 글·좋아요·팔로우·DM은 로그인한 **본인 이름으로만**, 차단된 계정은 아무것도 못 씀
+- 컬럼 권한: 프로필은 이름·소개·링크만 수정 가능 (역할·차단 여부는 못 바꿈)
+- 삭제·숨기기·차단은 **전용 함수**로만 (본인 확인 / 관리자 확인)
+- 500자 제한, 답글 허용 범위, 도배 방지(1분에 15개)도 DB 트리거가 검사
+- 화면에 넣는 모든 글은 HTML 이스케이프, Content-Security-Policy 적용
+
+## 구조
+
 ```
-
-데이터는 `data/ssayuz.db` 파일 하나에 저장돼요.
-
-### 관리자 지정
-
-```bash
-npm run make-admin -- alice          # 이미 가입한 alice를 관리자로
-ADMIN_USERNAMES=alice,bob npm start  # 이 아이디들은 시작할 때 / 가입할 때 관리자가 돼요
+docs/                  ← GitHub Pages가 그대로 올리는 사이트
+  index.html           화면 틀 (404.html도 같은 내용: 새로고침해도 주소 유지)
+  js/config.js         Supabase 주소와 공개 키  ← 여기만 바꾸면 됨
+  js/app.js            화면 이동, 피드, 글쓰기, 프로필, 활동, DM, 관리자
+  js/util.js           글 링크 처리, 시간 표시, 아바타, 아이콘
+  js/supabase.js       Supabase 라이브러리 (supabase-js)
+  style.css, fonts/    디자인, G마켓 산스
+  CNAME                ssayuz.kro.kr
+supabase/schema.sql    ← DB 표, 보안 규칙, 트리거, 관리자 함수 (SQL Editor에 붙여넣기)
 ```
-
-### 환경 변수
-
-| 변수 | 기본값 | 설명 |
-| --- | --- | --- |
-| `PORT` | `3000` | 서버 포트 |
-| `DATA_DIR` | `./data` | DB 저장 위치 |
-| `SITE_URL` | `https://ssayuz.kro.kr` | 서비스 주소 (링크 미리보기, 공유 링크) |
-| `ADMIN_USERNAMES` | (없음) | 관리자로 지정할 아이디 (쉼표로 구분) |
-| `TRUST_PROXY` | (없음) | 리버스 프록시 뒤라면 `1` |
-| `COOKIE_SECURE` | (없음) | HTTPS로 서비스하면 `1` |
-| `TZ` | `Asia/Seoul` | 시간대 |
 
 ## 주소
 
 | 경로 | 화면 |
 | --- | --- |
 | `/`, `/?feed=following` | 홈 (추천 / 팔로잉) |
-| `/compose`, `/compose?reply=번호`, `/compose?quote=번호` | 새 Snippet / 답글 / 인용 |
+| `/compose`, `?reply=번호`, `?quote=번호` | 새 Snippet / 답글 / 인용 |
 | `/@아이디/post/번호` | Snippet (대화) |
 | `/@아이디`, `?tab=replies`, `?tab=reposts` | 프로필 |
 | `/@아이디/followers`, `/@아이디/following` | 팔로워, 팔로잉 |
@@ -82,26 +71,5 @@ ADMIN_USERNAMES=alice,bob npm start  # 이 아이디들은 시작할 때 / 가�
 | `/dm`, `/dm/@아이디` | 메시지 |
 | `/settings` | 프로필 편집 |
 | `/admin` | 관리 (관리자만) |
-
-## 구조
-
-```
-src/
-  server.js               Express 앱
-  db.js                   SQLite 스키마
-  auth.js                 세션, 비밀번호, CSRF
-  helpers.js              템플릿 헬퍼 (글 링크 처리, 아바타, 아이콘)
-  notify.js               활동(알림)
-  moderation.js           숨김 필터, 관리 기록
-  routes/auth.js          가입 / 로그인
-  routes/posts.js         피드, 글쓰기, Snippet, 좋아요, 리포스트, 검색
-  routes/people.js        프로필, 팔로우, 프로필 편집
-  routes/notifications.js 활동
-  routes/dm.js            DM
-  routes/admin.js         관리자
-scripts/                  관리자 지정, 백업
-views/                    EJS 템플릿
-public/                   CSS, JS, 글꼴, 아이콘
-```
 
 글꼴 G마켓 산스는 ㈜지마켓이 무료로 배포하는 글꼴이에요.

@@ -1,9 +1,0 @@
-<%- include('partials/header') %>
-<div class="page-head"><a class="icon-btn" href="/@<%= member.username %>" aria-label="뒤로"><%- icon('back') %></a><h1 class="page-title">@<%= member.username %> · <%= list === 'followers' ? '팔로워' : '팔로잉' %></h1><span class="icon-btn"></span></div>
-<section class="feed">
-  <% if (people.length === 0) { %><div class="empty">아직 아무도 없어요.</div><% } %>
-  <% people.forEach(u => { %>
-    <a class="person" href="/@<%= u.username %>"><%- avatar(u, 44) %><div class="grow"><div class="bold"><%= u.display_name %></div><div class="small muted">@<%= u.username %></div><% if (u.bio) { %><div class="small person-bio"><%= u.bio %></div><% } %></div></a>
-  <% }) %>
-</section>
-<%- include('partials/footer') %>
