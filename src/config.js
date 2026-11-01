@@ -9,6 +9,8 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 module.exports = {
   PORT: Number(process.env.PORT) || 3000,
+  // 실제 서비스 주소 (링크 미리보기, canonical 주소에 쓰임)
+  SITE_URL: (process.env.SITE_URL || 'https://ssayuz.kro.kr').replace(/\/+$/, ''),
   DATA_DIR,
   UPLOAD_DIR,
   // HTTPS 뒤에서 돌릴 때 COOKIE_SECURE=1

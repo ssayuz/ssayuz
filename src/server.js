@@ -12,7 +12,10 @@ app.set('views', path.join(__dirname, '..', 'views'));
 app.disable('x-powered-by');
 if (config.TRUST_PROXY) app.set('trust proxy', /^\d+$/.test(config.TRUST_PROXY) ? Number(config.TRUST_PROXY) : config.TRUST_PROXY);
 
+app.get('/healthz', (req, res) => res.type('text').send('ok'));
+
 app.use((req, res, next) => {
+  if (config.COOKIE_SECURE) res.set('Strict-Transport-Security', 'max-age=31536000');
   res.set({
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
@@ -31,6 +34,7 @@ app.use(loadSession);
 app.use((req, res, next) => {
   Object.assign(res.locals, helpers);
   res.locals.path = req.path;
+  res.locals.siteUrl = config.SITE_URL;
   res.locals.title = null;
   next();
 });
@@ -57,7 +61,18 @@ cleanupStories();
 setInterval(cleanupStories, 10 * 60 * 1000).unref();
 
 if (require.main === module) {
-  app.listen(config.PORT, () => console.log(`ssayuz 실행 중: http://localhost:${config.PORT}`));
+  const server = app.listen(config.PORT, () => console.log(`ssayuz 실행 중: http://localhost:${config.PORT} (${config.SITE_URL})`));
+  // 재시작/배포 때 DB를 안전하게 닫기
+  const shutdown = (sig) => {
+    console.log(`${sig} 받음, 종료 중...`);
+    server.close(() => {
+      try { require('./db').close(); } catch {}
+      process.exit(0);
+    });
+    setTimeout(() => process.exit(0), 5000).unref();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 module.exports = app;

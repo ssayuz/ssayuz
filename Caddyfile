@@ -1,0 +1,5 @@
+# 도메인으로 들어오면 Let's Encrypt 인증서를 자동으로 받아 HTTPS로 서비스해요.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy app:3000
+}

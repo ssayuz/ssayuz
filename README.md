@@ -2,6 +2,8 @@
 
 > 말은 **토크**로, 순간은 **스냅**으로.
 
+🌐 **https://ssayuz.kro.kr** · 배포 방법은 [DEPLOY.md](DEPLOY.md)
+
 ssayuz는 익명으로 가볍게 떠드는 **토크**와 사진으로 나를 남기는 **스냅**이 한곳에 있는 커뮤니티예요.
 
 ## 용어
@@ -87,6 +89,7 @@ ADMIN_USERNAMES=alice,bob npm start  # 이 아이디들은 시작할 때 / 가�
 | `HOT_THRESHOLD` | `5` | 불타는 글이 되는 화력 |
 | `TRUST_PROXY` | (없음) | 리버스 프록시 뒤라면 `1` (손님 IP 표시용) |
 | `COOKIE_SECURE` | (없음) | HTTPS로 서비스하면 `1` |
+| `SITE_URL` | `https://ssayuz.kro.kr` | 서비스 주소 (링크 미리보기, canonical) |
 | `ADMIN_USERNAMES` | (없음) | 관리자로 지정할 아이디 (쉼표로 구분) |
 | `TZ` | `Asia/Seoul` | 시간대 |
 
