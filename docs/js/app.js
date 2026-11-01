@@ -698,7 +698,7 @@ async function viewSettings() {
   <p class="small muted">내 계정과 내가 쓴 Snippet·답글, 좋아요, 리포스트, 팔로우, 메시지, 활동 기록이 <b>모두 지워지고 되돌릴 수 없어요.</b></p>
   <button class="btn btn-danger btn-block" data-delete-account>계정 삭제</button>
 </section>
-<p class="center tiny mt"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></p>`;
+<p class="center tiny mt"><a href="terms.html" target="_blank" rel="noopener">이용약관</a> · <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></p>`;
   const form = document.getElementById('settings-form');
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -728,7 +728,7 @@ function authPage(kind, params) {
     <label>아이디 ${signup ? '<span class="muted light">(영문 소문자, 숫자, _ . 3~20자)</span>' : ''}<input name="username" required minlength="3" maxlength="20" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
     ${signup ? '<label>이름<input name="display_name" required maxlength="20" placeholder="Snippet에 보이는 이름"></label>' : ''}
     <label>비밀번호<input type="password" name="password" required minlength="6" autocomplete="${signup ? 'new-password' : 'current-password'}" ${signup ? 'placeholder="6자 이상"' : ''}></label>
-    ${signup ? `<label class="check-row"><input type="checkbox" name="agree" required> <span>만 14세 이상이며 <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>에 동의해요</span></label>` : ''}
+    ${signup ? `<label class="check-row"><input type="checkbox" name="agree" required> <span>만 14세 이상이며 <a href="terms.html" target="_blank" rel="noopener">이용약관</a>과 <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>에 동의해요</span></label>` : ''}
     <button class="btn btn-ink btn-block">${signup ? '가입하기' : '로그인'}</button>
   </form>
   <p class="center small mt">${signup ? `이미 계정이 있나요? <a href="${u('/login')}" class="bold">로그인</a>` : `처음이에요? <a href="${u('/signup')}" class="bold">가입하기</a>`}</p>
@@ -750,7 +750,7 @@ function authPage(kind, params) {
         const display_name = form.display_name.value.trim();
         if (!display_name) throw new Error('이름을 입력해 주세요.');
         if (password.length < 6) throw new Error('비밀번호는 6자 이상이어야 해요.');
-        if (!form.agree.checked) throw new Error('개인정보처리방침에 동의해 주세요.');
+        if (!form.agree.checked) throw new Error('이용약관과 개인정보처리방침에 동의해 주세요.');
         const taken = await q(sb.from('profiles').select('id').eq('username', username).maybeSingle());
         if (taken) throw new Error('이미 사용 중인 아이디예요.');
         const { data, error } = await sb.auth.signUp({ email: emailOf(username), password, options: { data: { username, display_name } } });
