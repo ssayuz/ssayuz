@@ -50,20 +50,17 @@
 
 ## 4단계. ssayuz.kro.kr 연결
 
-1. **내도메인.한국** → 도메인 관리 → `ssayuz.kro.kr` 수정 → **고급설정 (DNS)**
-2. **IP연결(A)** 체크, 앞 칸은 **비워 두고** 오른쪽에 아래 주소를 넣기
-   ( **[+]** 로 줄을 늘려 4개 모두 넣으면 가장 좋고, 1개만 넣어도 돼요)
+> GitHub은 `ssayuz.kro.kr` 을 **서브도메인**으로 봐요. 그래서 IP(A) 대신 **별칭(CNAME)** 으로 연결해야 해요.
+> (A로 넣으면 사이트는 열려도 `InvalidARecordError` 가 나고 HTTPS가 안 켜져요)
 
-   ```
-   185.199.108.153
-   185.199.109.153
-   185.199.110.153
-   185.199.111.153
-   ```
-3. 웹포워딩·단일페이지는 체크하지 말고 → 보안코드 → **수정하기**
-4. GitHub 저장소 **Settings → Pages → Custom domain** 에 `ssayuz.kro.kr` 입력 → **Save**
-   → 확인이 끝나면(몇 분~몇 시간) **Enforce HTTPS** 체크
-5. **https://ssayuz.kro.kr** 접속! 🎉
+1. **내도메인.한국** → 도메인 관리 → `ssayuz.kro.kr` 수정 → **고급설정 (DNS)**
+2. **IP연결(A)** 은 **체크 해제** (A와 CNAME을 같이 켜면 안 돼요)
+3. **별칭(CNAME)** 체크, 앞 칸은 **비워 두고** 오른쪽에 `ssayuz.github.io`
+4. 웹포워딩·단일페이지는 체크하지 말고 → 보안코드 → **수정하기**
+5. 확인: https://dns.google/resolve?name=ssayuz.kro.kr&type=CNAME 에 `ssayuz.github.io.` 가 보이면 OK
+6. GitHub 저장소 **Settings → Pages → Custom domain** 에 `ssayuz.kro.kr` → **Save** (또는 **Check again**)
+   → ✅ DNS check successful 이 되면 **Enforce HTTPS** 체크
+7. **https://ssayuz.kro.kr** 접속! 🎉
 
 ## 5단계. 나를 관리자로
 
