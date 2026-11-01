@@ -1,20 +1,21 @@
 <%- include('partials/header') %>
-<section class="card narrow pad-lg">
-  <h1 class="h2">프로필 편집</h1>
-  <% if (error) { %><div class="alert"><%= error %></div><% } %>
-  <% if (saved) { %><div class="alert ok">저장했어요.</div><% } %>
-  <form method="post" action="/settings?_csrf=<%= csrf %>" enctype="multipart/form-data" class="stack">
-    <div class="me-row">
+<section class="box box-pad-lg narrow">
+  <span class="kicker">my room</span>
+  <h1 class="h2 mt">룸 꾸미기</h1>
+  <% if (error) { %><div class="alert mt"><%= error %></div><% } %>
+  <% if (saved) { %><div class="alert ok mt">저장했어요 ✓</div><% } %>
+  <form method="post" action="/settings?_csrf=<%= csrf %>" enctype="multipart/form-data" class="stack mt">
+    <div class="row">
       <img class="av av-64" src="<%= avatar(user) %>" alt="" id="avatar-preview">
       <div class="stack-sm">
-        <label class="btn btn-ghost btn-sm filebtn">사진 바꾸기<input type="file" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp" data-avatar-preview="#avatar-preview"></label>
-        <% if (user.avatar) { %><label class="small check"><input type="checkbox" name="remove_avatar" value="1"> 현재 사진 삭제</label><% } %>
+        <label class="btn btn-sm filebtn">사진 바꾸기<input type="file" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp" data-avatar-preview="#avatar-preview"></label>
+        <% if (user.avatar) { %><label class="small check"><input type="checkbox" name="remove_avatar" value="1"> 지금 사진 빼기</label><% } %>
       </div>
     </div>
-    <label>아이디<input value="<%= user.username %>" disabled></label>
+    <label>아이디<input value="@<%= user.username %>" disabled></label>
     <label>닉네임<input name="display_name" value="<%= user.display_name %>" required maxlength="20"></label>
-    <label>소개<textarea name="bio" rows="3" maxlength="150"><%= user.bio %></textarea></label>
-    <button class="btn btn-primary btn-block">저장</button>
+    <label>소개<textarea name="bio" rows="3" maxlength="150" placeholder="나는 이런 사람!"><%= user.bio %></textarea></label>
+    <button class="btn btn-ink btn-block">저장</button>
   </form>
 </section>
 <%- include('partials/footer') %>

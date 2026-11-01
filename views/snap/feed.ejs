@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+<div class="feed-layout">
+  <div class="feed-col">
+    <% if (snaps.length === 0) { %>
+      <section class="box box-pad-lg center">
+        <h2 class="h2">아직 비어 있어요</h2>
+        <p class="muted light">사람들을 찜하거나 첫 스냅을 올려 보세요.</p>
+        <div class="row centered mt"><a class="btn btn-lime" href="/snap/new">＋ 스냅 올리기</a><a class="btn" href="/explore">둘러보기</a></div>
+      </section>
+    <% } %>
+    <% snaps.forEach(s => { %><%- include('../partials/snapcard', { s, back: 'feed', full: false }) %><% }) %>
+    <% if (nextBefore) { %><p class="center"><a class="btn" href="/snap?before=<%= nextBefore %>">더 보기 ↓</a></p><% } %>
+  </div>
+  <aside class="feed-side">
+    <section class="box box-pad">
+      <a class="person" href="/@<%= user.username %>">
+        <img class="av av-44" src="<%= avatar(user) %>" alt="">
+        <div><div class="bold">@<%= user.username %></div><div class="tiny muted light"><%= user.display_name %> · 내 룸 가기</div></div>
+      </a>
+      <% if (suggestions.length) { %>
+        <div class="small bold mt">찜해 볼 만한 사람</div>
+        <% suggestions.forEach(p => { %>
+          <div class="person">
+            <img class="av av-36" src="<%= avatar(p) %>" alt="">
+            <div class="grow"><a class="bold small" href="/@<%= p.username %>">@<%= p.username %></a><div class="tiny muted light">팬 <%= num(p.fans) %></div></div>
+            <form method="post" action="/@<%= p.username %>/pick" class="inline">
+              <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="back" value="feed">
+              <button class="btn btn-sm btn-lime">찜</button>
+            </form>
+          </div>
+        <% }) %>
+      <% } %>
+    </section>
+  </aside>
+</div>
+<%- include('../partials/footer') %>

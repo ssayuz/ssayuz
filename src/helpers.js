@@ -8,16 +8,16 @@ function nl2br(s) {
   return esc(s).replace(/\r?\n/g, '<br>');
 }
 
-// 인스타 캡션: #해시태그, @멘션 링크
+// 스냅 글: #해시태그, @멘션 링크
 function richText(s) {
   return esc(s)
-    .replace(/(^|\s)@([a-zA-Z0-9_.]{3,20})/g, '$1<a href="/u/$2">@$2</a>')
+    .replace(/(^|\s)@([a-zA-Z0-9_.]{3,20})/g, '$1<a href="/@$2">@$2</a>')
     .replace(/(^|\s)#([^\s#<>&]{1,30})/g, (m, sp, tag) => `${sp}<a href="/explore?tag=${encodeURIComponent(tag)}">#${tag}</a>`)
     .replace(/\r?\n/g, '<br>');
 }
 
-// 디시식 시간: 오늘이면 HH:MM, 아니면 MM.DD
-function dcTime(ts) {
+// 짧은 시간 표시: 오늘이면 HH:MM, 아니면 MM.DD
+function shortTime(ts) {
   const d = new Date(ts);
   const now = new Date();
   if (d.toDateString() === now.toDateString()) return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -55,12 +55,12 @@ function images(json) {
 
 function num(n) {
   n = Number(n) || 0;
-  if (n >= 10000) return (n / 10000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + '만';
-  if (n >= 1000) return n.toLocaleString('ko-KR');
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
   return String(n);
 }
 
-// 유동 IP 앞 두 자리 (디시식)
+// 손님 IP 앞 두 자리
 function ipPrefix(ip = '') {
   ip = String(ip).replace(/^::ffff:/, '');
   if (ip === '::1') return '127.0';
@@ -96,4 +96,4 @@ function cooldown(key, ms) {
   return 0;
 }
 
-module.exports = { esc, nl2br, richText, dcTime, fullTime, ago, avatar, images, num, ipPrefix, qs, likeEscape, toInt, cooldown };
+module.exports = { esc, nl2br, richText, shortTime, fullTime, ago, avatar, images, num, ipPrefix, qs, likeEscape, toInt, cooldown };

@@ -1,41 +1,49 @@
 <%- include('partials/header') %>
 <section class="hero">
   <div>
-    <h1 class="hero-title">떠들 땐 <span class="accent-dc">갤러리</span>, 남길 땐 <span class="accent-ig">피드</span></h1>
-    <p class="muted">유동으로 아무 말이나 하고, 고닉으로 사진을 남기는 곳.</p>
+    <span class="kicker">ssayuz</span>
+    <h1 class="hero-title mt">말은 <mark>토크</mark>로,<br>순간은 <mark class="hl2">스냅</mark>으로.</h1>
+    <p>손님으로 가볍게 떠들고, 단골이 되면 사진으로 나를 남겨요.<br>좋은 글엔 🔥 불을 지피고, 별로면 🧊 찬물을 끼얹어요.</p>
+    <div class="hero-cta">
+      <a class="btn btn-lime" href="/talk">토크 하러 가기</a>
+      <a class="btn" href="/explore">스냅 둘러보기</a>
+    </div>
   </div>
-  <div class="hero-cta">
-    <a class="btn btn-primary" href="/g">갤러리 둘러보기</a>
-    <a class="btn btn-ghost" href="/explore">사진 탐색</a>
+  <div class="stickers">
+    <% rooms.forEach(r => { %><a class="sticker" href="/talk/<%= r.slug %>"><%= r.emoji %> <%= r.name %></a><% }) %>
   </div>
 </section>
 
-<div class="gal-chips">
-  <% galleries.forEach(g => { %><a class="chip" href="/g/<%= g.slug %>"><%= g.is_minor ? 'ⓜ ' : '' %><%= g.name %></a><% }) %>
-  <a class="chip chip-more" href="/g">전체 갤러리 →</a>
-</div>
-
 <div class="cols-2">
-  <section class="card">
-    <h2 class="box-title">🔥 실시간 개념글</h2>
-    <% if (concept.length === 0) { %>
-      <div class="empty small">아직 개념글이 없어요. 추천을 눌러 개념글을 만들어 주세요!</div>
+  <section class="box">
+    <div class="box-head"><h2 class="box-title">🔥 이번 주 불타는 토크</h2><a class="small bold" href="/talk">전체 →</a></div>
+    <% if (hot.length === 0) { %>
+      <div class="empty small">아직 조용해요. 첫 불씨를 지펴 보세요.</div>
     <% } else { %>
-      <ol class="rank">
-        <% concept.forEach((p, i) => { %>
-          <li><span class="rank-n"><%= i + 1 %></span><a href="/g/<%= p.slug %>/<%= p.id %>"><%= p.title %></a><% if (p.ccount) { %> <span class="reply">[<%= p.ccount %>]</span><% } %><span class="muted small rank-g"><%= p.gname %></span></li>
+      <ol class="heat-list">
+        <% hot.forEach((t, i) => { %>
+          <li><a href="/talk/<%= t.slug %>/<%= t.id %>">
+            <span class="heat-rank"><%= i + 1 %></span>
+            <span class="heat-title"><%= t.title %><% if (t.ccount) { %> <span class="cc">+<%= t.ccount %></span><% } %></span>
+            <span class="flame"><%= t.fire - t.ice > 0 ? '🔥' + (t.fire - t.ice) : '' %></span>
+            <span class="tag"><%= t.emoji %> <%= t.rname %></span>
+          </a></li>
         <% }) %>
       </ol>
     <% } %>
   </section>
-  <section class="card">
-    <h2 class="box-title">🆕 최신글</h2>
-    <% if (latest.length === 0) { %>
-      <div class="empty small">첫 글의 주인공이 되어 보세요. <a href="/g/free/write">자유갤에 글쓰기</a></div>
+  <section class="box">
+    <div class="box-head"><h2 class="box-title">✎ 방금 올라온 토크</h2></div>
+    <% if (fresh.length === 0) { %>
+      <div class="empty small">첫 글의 주인공이 되어 보세요. <a class="bold" href="/talk/free/write">아무말 방에 쓰기</a></div>
     <% } else { %>
-      <ul class="rank">
-        <% latest.forEach(p => { %>
-          <li><span class="muted small rank-t"><%= dcTime(p.created_at) %></span><a href="/g/<%= p.slug %>/<%= p.id %>"><%= p.title %></a><% if (p.ccount) { %> <span class="reply">[<%= p.ccount %>]</span><% } %><span class="muted small rank-g"><%= p.gname %></span></li>
+      <ul class="heat-list">
+        <% fresh.forEach(t => { %>
+          <li><a href="/talk/<%= t.slug %>/<%= t.id %>">
+            <span class="tiny muted light"><%= shortTime(t.created_at) %></span>
+            <span class="heat-title"><%= t.title %><% if (t.ccount) { %> <span class="cc">+<%= t.ccount %></span><% } %></span>
+            <span class="tag"><%= t.emoji %> <%= t.rname %></span>
+          </a></li>
         <% }) %>
       </ul>
     <% } %>
@@ -43,7 +51,7 @@
 </div>
 
 <section class="section">
-  <div class="section-head"><h2 class="box-title">📸 인기 사진</h2><a class="small" href="/explore">더 보기 →</a></div>
-  <%- include('partials/grid', { items: photos, emptyText: '아직 올라온 사진이 없어요.' }) %>
+  <div class="section-head"><h2 class="h2">✦ 반짝이는 스냅</h2><a class="small bold" href="/explore">더 둘러보기 →</a></div>
+  <%- include('partials/wall', { items: snaps, emptyText: '아직 스냅이 없어요. 첫 장을 올려 보세요!' }) %>
 </section>
 <%- include('partials/footer') %>

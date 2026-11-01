@@ -1,0 +1,32 @@
+<%- include('../partials/header') %>
+<section class="box box-pad-lg">
+  <div class="row between wrap-row">
+    <div><span class="kicker"><%= room.emoji %> <%= room.name %></span><h1 class="h2 mt">새 토크</h1></div>
+    <a class="small bold" href="/talk/<%= room.slug %>">← 방으로</a>
+  </div>
+  <% if (error) { %><div class="alert mt"><%= error %></div><% } %>
+  <form method="post" action="/talk/<%= room.slug %>/write?_csrf=<%= csrf %>" enctype="multipart/form-data" class="stack mt">
+    <% if (user) { %>
+      <div class="row small"><span class="tag tag-regular">단골</span> <b><%= user.display_name %></b> 이름으로 올라가요.</div>
+    <% } else { %>
+      <div class="row small"><span class="tag tag-guest">손님</span> 으로 써요. IP 앞자리가 함께 보여요.</div>
+      <div class="row-2">
+        <label>닉네임<input name="nickname" value="<%= form.nickname || '' %>" maxlength="20" placeholder="손님"></label>
+        <label>비밀번호<input type="password" name="password" required minlength="2" maxlength="100" placeholder="지울 때 필요해요" autocomplete="new-password"></label>
+      </div>
+    <% } %>
+    <fieldset class="emoji-pick topic-pick">
+      <legend class="small bold">분류</legend>
+      <% topics.forEach((tp, i) => { %><label><input type="radio" name="topic" value="<%= tp %>" <%= (form.topic ? form.topic === tp : i === 0) ? 'checked' : '' %>><span><%= tp %></span></label><% }) %>
+    </fieldset>
+    <label>제목<input name="title" value="<%= form.title || '' %>" required maxlength="80" placeholder="한 줄로 요약하면?"></label>
+    <label>내용<textarea name="body" rows="12" maxlength="20000" placeholder="하고 싶은 말을 적어 주세요."><%= form.body || '' %></textarea></label>
+    <label class="drop slim">
+      <input type="file" name="images" accept="image/jpeg,image/png,image/gif,image/webp" multiple data-preview="#preview">
+      <span>🖼 이미지 붙이기</span><span class="tiny muted light">(선택 · 최대 10장)</span>
+    </label>
+    <div id="preview" class="preview"></div>
+    <div class="row centered"><a class="btn" href="/talk/<%= room.slug %>">취소</a><button class="btn btn-ink">올리기 →</button></div>
+  </form>
+</section>
+<%- include('../partials/footer') %>

@@ -7,7 +7,7 @@ const USERNAME_RE = /^[a-zA-Z0-9_.]{3,20}$/;
 
 router.get('/signup', (req, res) => {
   if (req.user) return res.redirect('/');
-  res.render('signup', { title: '가입하기', error: null, form: {} });
+  res.render('signup', { title: '입주하기', error: null, form: {} });
 });
 
 router.post('/signup', (req, res) => {
@@ -15,7 +15,7 @@ router.post('/signup', (req, res) => {
   const displayName = String(req.body.display_name || '').trim();
   const password = String(req.body.password || '');
   const form = { username, display_name: displayName };
-  const fail = (error) => res.status(400).render('signup', { title: '가입하기', error, form });
+  const fail = (error) => res.status(400).render('signup', { title: '입주하기', error, form });
 
   if (!USERNAME_RE.test(username)) return fail('아이디는 영문, 숫자, _ . 로 3~20자여야 해요.');
   if (!displayName || displayName.length > 20) return fail('닉네임은 1~20자로 입력해 주세요.');
@@ -26,12 +26,12 @@ router.post('/signup', (req, res) => {
     .prepare('INSERT INTO users (username, display_name, password_hash, created_at) VALUES (?, ?, ?, ?)')
     .run(username, displayName, hashPassword(password), Date.now());
   createSession(res, Number(r.lastInsertRowid));
-  res.redirect('/feed');
+  res.redirect('/snap');
 });
 
 router.get('/login', (req, res) => {
   if (req.user) return res.redirect('/');
-  res.render('login', { title: '로그인', error: null, next: safeNext(req.query.next), username: '' });
+  res.render('login', { title: '들어가기', error: null, next: safeNext(req.query.next), username: '' });
 });
 
 router.post('/login', (req, res) => {
@@ -40,7 +40,7 @@ router.post('/login', (req, res) => {
   const next = safeNext(req.body.next);
   const u = db.prepare('SELECT id, password_hash FROM users WHERE username = ?').get(username);
   if (!u || !verifyPassword(password, u.password_hash)) {
-    return res.status(400).render('login', { title: '로그인', error: '아이디 또는 비밀번호가 맞지 않아요.', next, username });
+    return res.status(400).render('login', { title: '들어가기', error: '아이디 또는 비밀번호가 맞지 않아요.', next, username });
   }
   createSession(res, u.id);
   res.redirect(next);

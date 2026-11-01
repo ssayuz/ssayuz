@@ -1,0 +1,52 @@
+<%- include('partials/header') %>
+<div class="member-banner" aria-hidden="true"></div>
+<section class="member-card">
+  <div class="member-top">
+    <img class="av av-120" src="<%= avatar(member) %>" alt="@<%= member.username %>의 사진">
+    <div class="row">
+      <% if (isMe) { %>
+        <a class="btn btn-sm" href="/settings">✎ 룸 꾸미기</a>
+        <a class="btn btn-lime btn-sm" href="/snap/new">＋ 스냅</a>
+      <% } else if (user) { %>
+        <form method="post" action="/@<%= member.username %>/pick" class="inline pick-form">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button class="btn <%= picked ? '' : 'btn-lime' %>"><%= picked ? '✓ 찜함' : '♡ 찜하기' %></button>
+        </form>
+      <% } else { %>
+        <a class="btn btn-lime" href="/login?next=/@<%= member.username %>">♡ 찜하기</a>
+      <% } %>
+    </div>
+  </div>
+  <h1 class="member-name"><%= member.display_name %> <span class="handle">@<%= member.username %></span></h1>
+  <% if (member.bio) { %><p class="bio"><%- richText(member.bio) %></p><% } %>
+  <div class="stats">
+    <span class="stat"><b><%= num(member.snap_count) %></b> 스냅</span>
+    <span class="stat"><b><%= num(member.talk_count) %></b> 토크</span>
+    <a class="stat" href="/@<%= member.username %>/fans"><b class="fan-count"><%= num(member.fans) %></b> 팬</a>
+    <a class="stat" href="/@<%= member.username %>/picks"><b><%= num(member.picks) %></b> 찜</a>
+  </div>
+</section>
+<nav class="tabs">
+  <div class="seg">
+    <a href="/@<%= member.username %>" class="<%= tab === 'snap' ? 'on' : '' %>">✦ 스냅</a>
+    <a href="/@<%= member.username %>?tab=talk" class="<%= tab === 'talk' ? 'on' : '' %>">✎ 토크</a>
+  </div>
+</nav>
+<% if (tab === 'snap') { %>
+  <%- include('partials/wall', { items: snaps, emptyText: isMe ? '첫 스냅을 올려 보세요.' : '아직 스냅이 없어요.' }) %>
+<% } else { %>
+  <% if (talks.length === 0) { %><div class="box empty">아직 쓴 토크가 없어요.</div><% } else { %>
+  <div class="talk-list">
+    <% talks.forEach(t => { %>
+      <article class="talk-item">
+        <%- include('partials/heat', { t, threshold }) %>
+        <div class="talk-main">
+          <a class="talk-title" href="/talk/<%= t.slug %>/<%= t.id %>"><%= t.title %><% if (t.ccount) { %> <span class="cc">+<%= t.ccount %></span><% } %></a>
+          <div class="talk-meta"><a class="tag" href="/talk/<%= t.slug %>"><%= t.emoji %> <%= t.rname %></a><span><%= ago(t.created_at) %></span><span>👀 <%= num(t.views) %></span></div>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+  <% } %>
+<% } %>
+<%- include('partials/footer') %>

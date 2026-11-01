@@ -1,14 +1,14 @@
 </main>
-<footer class="foot wrap">싸유즈 · 갤러리와 사진을 한 곳에서</footer>
-<nav class="bottomnav" aria-label="하단 메뉴">
-  <a href="/" class="<%= path === '/' ? 'on' : '' %>"><span class="ico">⌂</span>홈</a>
-  <a href="/g" class="<%= path.startsWith('/g') ? 'on' : '' %>"><span class="ico">☰</span>갤러리</a>
-  <a href="/p/new" class="plus"><span class="ico">＋</span>올리기</a>
-  <a href="/feed" class="<%= path.startsWith('/feed') ? 'on' : '' %>"><span class="ico">▦</span>피드</a>
+<footer class="foot wrap"><b>ssayuz</b> · 말은 토크로, 순간은 스냅으로</footer>
+<nav class="dock" aria-label="빠른 이동">
+  <a href="/" class="<%= path === '/' ? 'on' : '' %>"><span class="d-ico">◐</span>홈</a>
+  <a href="/talk" class="<%= path.startsWith('/talk') ? 'on' : '' %>"><span class="d-ico">✎</span>토크</a>
+  <a href="/snap/new" class="d-plus"><span class="d-ico">＋</span>올리기</a>
+  <a href="/snap" class="<%= path === '/snap' || path.startsWith('/explore') ? 'on' : '' %>"><span class="d-ico">✦</span>스냅</a>
   <% if (user) { %>
-    <a href="/u/<%= user.username %>" class="<%= path.startsWith('/u/' + user.username) ? 'on' : '' %>"><img class="av av-22" src="<%= avatar(user) %>" alt="">나</a>
+    <a href="/@<%= user.username %>" class="<%= path.startsWith('/@' + user.username) ? 'on' : '' %>"><span class="d-ico">⌂</span>내 룸</a>
   <% } else { %>
-    <a href="/login"><span class="ico">◯</span>로그인</a>
+    <a href="/login"><span class="d-ico">→</span>들어가기</a>
   <% } %>
 </nav>
 </body>

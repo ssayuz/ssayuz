@@ -3,35 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><%= title ? title + ' · 싸유즈' : '싸유즈 - 갤러리 & 사진 SNS' %></title>
+<title><%= title ? title + ' — ssayuz' : 'ssayuz — 말은 토크로, 순간은 스냅으로' %></title>
 <meta name="csrf-token" content="<%= csrf %>">
+<meta name="theme-color" content="#c9f23d">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/fonts/GmarketSansMedium.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/static/fonts/GmarketSansBold.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="/static/style.css">
 <script src="/static/app.js" defer></script>
 </head>
 <body>
 <header class="topbar">
   <div class="wrap topbar-in">
-    <a class="logo" href="/">싸유즈</a>
+    <a class="logo" href="/" aria-label="ssayuz 홈">ssayuz</a>
     <nav class="topnav">
-      <a href="/g" class="<%= path.startsWith('/g') ? 'on' : '' %>">갤러리</a>
-      <a href="/feed" class="<%= path.startsWith('/feed') || path.startsWith('/p/') ? 'on' : '' %>">피드</a>
-      <a href="/explore" class="<%= path.startsWith('/explore') ? 'on' : '' %>">탐색</a>
+      <a href="/talk" class="<%= path.startsWith('/talk') ? 'on' : '' %>">토크</a>
+      <a href="/snap" class="<%= path.startsWith('/snap') ? 'on' : '' %>">스냅</a>
+      <a href="/explore" class="<%= path.startsWith('/explore') ? 'on' : '' %>">둘러보기</a>
     </nav>
     <form class="topsearch" action="/explore" method="get" role="search">
-      <input type="search" name="q" placeholder="사람 검색" aria-label="사람 검색">
+      <input type="search" name="q" placeholder="사람, 방 찾기" aria-label="사람, 방 찾기">
     </form>
     <div class="topright">
       <% if (user) { %>
-        <a class="btn btn-primary btn-sm hide-mobile" href="/p/new">+ 새 게시물</a>
-        <a href="/u/<%= user.username %>" class="me" title="내 프로필"><img class="av av-28" src="<%= avatar(user) %>" alt="내 프로필"></a>
-        <form method="post" action="/logout" class="inline hide-mobile">
+        <a class="btn btn-lime btn-sm hide-sm" href="/snap/new">＋ 스냅</a>
+        <a href="/@<%= user.username %>" title="내 룸"><img class="av av-36" src="<%= avatar(user) %>" alt="내 룸"></a>
+        <form method="post" action="/logout" class="inline hide-sm">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
-          <button class="linkbtn">로그아웃</button>
+          <button class="linkbtn small">나가기</button>
         </form>
       <% } else { %>
-        <a href="/login?next=<%= encodeURIComponent(path) %>" class="btn btn-ghost btn-sm">로그인</a>
-        <a class="btn btn-primary btn-sm" href="/signup">가입</a>
+        <a href="/login?next=<%= encodeURIComponent(path) %>" class="btn btn-sm">들어가기</a>
+        <a class="btn btn-ink btn-sm" href="/signup">입주하기</a>
       <% } %>
     </div>
   </div>

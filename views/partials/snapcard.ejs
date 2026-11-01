@@ -1,0 +1,35 @@
+<% const imgs = images(s.images); %>
+<article class="polaroid snap" id="snap-<%= s.id %>">
+  <header class="polaroid-head">
+    <a href="/@<%= s.username %>"><img class="av av-36" src="<%= avatar(s) %>" alt=""></a>
+    <div class="grow">
+      <a href="/@<%= s.username %>" class="bold">@<%= s.username %></a>
+      <div class="tiny muted light"><%= ago(s.created_at) %></div>
+    </div>
+  </header>
+  <div class="photo" data-snap="<%= s.id %>">
+    <div class="slides">
+      <% imgs.forEach((src, i) => { %><img src="/uploads/<%= src %>" alt="@<%= s.username %>의 사진 <%= i + 1 %>" loading="lazy"><% }) %>
+    </div>
+    <% if (imgs.length > 1) { %>
+      <div class="pips"><% imgs.forEach((_, i) => { %><span class="<%= i === 0 ? 'on' : '' %>"></span><% }) %></div>
+      <span class="pg">1 / <%= imgs.length %></span>
+    <% } %>
+    <span class="burst" aria-hidden="true">✦</span>
+  </div>
+  <div class="polaroid-foot">
+    <div class="snap-actions">
+      <form method="post" action="/snap/<%= s.id %>/sparkle" class="inline spark-form">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <input type="hidden" name="back" value="<%= typeof back !== 'undefined' ? back : '' %>">
+        <button class="spark <%= s.sparkled ? 'on' : '' %>" aria-pressed="<%= s.sparkled ? 'true' : 'false' %>"><span class="s-ico">✦</span>반짝 <span class="spark-n"><%= num(s.sparkles) %></span></button>
+      </form>
+      <a class="spark" href="/snap/<%= s.id %>#says">💬 한마디 <%= num(s.says) %></a>
+    </div>
+    <% if (s.caption) { %><p class="caption"><%- richText(s.caption) %></p><% } %>
+    <% if (s.says_list && !full) { %>
+      <% s.says_list.forEach(c => { %><p class="say"><a href="/@<%= c.username %>" class="bold">@<%= c.username %></a> <%- richText(c.body) %></p><% }) %>
+      <% if (s.says > s.says_list.length) { %><a class="tiny muted" href="/snap/<%= s.id %>#says">한마디 <%= s.says %>개 전부 보기 →</a><% } %>
+    <% } %>
+  </div>
+</article>

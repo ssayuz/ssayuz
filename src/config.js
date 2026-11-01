@@ -15,10 +15,10 @@ module.exports = {
   COOKIE_SECURE: process.env.COOKIE_SECURE === '1',
   // 리버스 프록시 뒤라면 TRUST_PROXY=1 (유동 IP 표시용)
   TRUST_PROXY: process.env.TRUST_PROXY,
-  // 추천 수가 이 값 이상이면 개념글
-  CONCEPT_THRESHOLD: Number(process.env.CONCEPT_THRESHOLD) || 5,
-  GALLERY_PAGE_SIZE: 30,
+  // 화력(🔥 - 🧊)이 이 값 이상이면 '불타는 글'
+  HOT_THRESHOLD: Number(process.env.HOT_THRESHOLD) || 5,
+  TALK_PAGE_SIZE: 25,
   FEED_PAGE_SIZE: 10,
   EXPLORE_PAGE_SIZE: 30,
-  HEADS: ['일반', '정보', '질문', '짤'],
+  TOPICS: ['잡담', '정보', '질문', '짤'],
 };

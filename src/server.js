@@ -37,10 +37,10 @@ app.use((req, res, next) => {
 app.use(csrf);
 
 app.use(require('./routes/auth'));
-app.use('/g', require('./routes/gallery'));
-app.use(require('./routes/social'));
+app.use('/talk', require('./routes/talk'));
+app.use(require('./routes/snap'));
 
-app.use((req, res) => res.status(404).render('error', { title: '404', message: '존재하지 않는 페이지예요.' }));
+app.use((req, res) => res.status(404).render('error', { title: '404', message: '여긴 아무것도 없어요.' }));
 app.use((err, req, res, next) => {
   console.error(err);
   if (res.headersSent) return next(err);
@@ -48,7 +48,7 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
-  app.listen(config.PORT, () => console.log(`싸유즈 실행 중: http://localhost:${config.PORT}`));
+  app.listen(config.PORT, () => console.log(`ssayuz 실행 중: http://localhost:${config.PORT}`));
 }
 
 module.exports = app;

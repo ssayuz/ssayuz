@@ -1,15 +1,16 @@
 <%- include('partials/header') %>
-<section class="card narrow pad-lg">
-  <div class="logo big center">싸유즈</div>
-  <p class="muted center">갤러리에서 떠들고, 피드에 사진을 남겨 보세요.</p>
+<section class="box box-pad-lg narrow">
+  <div class="center"><span class="logo big">ssayuz</span></div>
+  <h1 class="h2 center">입주하기</h1>
+  <p class="muted center small">입주하면 <b>단골</b> 배지를 달고 토크하고, 스냅을 올릴 수 있어요.</p>
   <% if (error) { %><div class="alert"><%= error %></div><% } %>
-  <form method="post" action="/signup" class="stack">
+  <form method="post" action="/signup" class="stack mt">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
-    <label>아이디<input name="username" value="<%= form.username || '' %>" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9_.]{3,20}" autocomplete="username" placeholder="영문, 숫자, _ ."></label>
-    <label>닉네임<input name="display_name" value="<%= form.display_name || '' %>" required maxlength="20" placeholder="갤러리와 프로필에 보이는 이름"></label>
-    <label>비밀번호<input type="password" name="password" required minlength="6" autocomplete="new-password"></label>
-    <button class="btn btn-primary btn-block">가입하기</button>
+    <label>아이디 <span class="muted light">(룸 주소: ssayuz/@아이디)</span><input name="username" value="<%= form.username || '' %>" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9_.]{3,20}" autocomplete="username" placeholder="영문, 숫자, _ ."></label>
+    <label>닉네임<input name="display_name" value="<%= form.display_name || '' %>" required maxlength="20" placeholder="토크와 룸에 보이는 이름"></label>
+    <label>비밀번호<input type="password" name="password" required minlength="6" autocomplete="new-password" placeholder="6자 이상"></label>
+    <button class="btn btn-ink btn-block">입주하기 →</button>
   </form>
-  <p class="center small">이미 계정이 있나요? <a href="/login">로그인</a></p>
+  <p class="center small mt">이미 입주했나요? <a href="/login" class="bold">들어가기</a></p>
 </section>
 <%- include('partials/footer') %>

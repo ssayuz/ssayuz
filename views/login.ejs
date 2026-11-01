@@ -1,15 +1,16 @@
 <%- include('partials/header') %>
-<section class="card narrow pad-lg">
-  <div class="logo big center">싸유즈</div>
+<section class="box box-pad-lg narrow">
+  <div class="center"><span class="logo big">ssayuz</span></div>
+  <h1 class="h2 center">들어가기</h1>
   <% if (error) { %><div class="alert"><%= error %></div><% } %>
-  <form method="post" action="/login" class="stack">
+  <form method="post" action="/login" class="stack mt">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
     <input type="hidden" name="next" value="<%= next %>">
     <label>아이디<input name="username" value="<%= username %>" required autocomplete="username"></label>
     <label>비밀번호<input type="password" name="password" required autocomplete="current-password"></label>
-    <button class="btn btn-primary btn-block">로그인</button>
+    <button class="btn btn-ink btn-block">들어가기 →</button>
   </form>
-  <p class="center small">계정이 없나요? <a href="/signup">가입하기</a></p>
-  <p class="center small muted">갤러리 글은 로그인 없이 유동으로도 쓸 수 있어요.</p>
+  <p class="center small mt">처음이에요? <a href="/signup" class="bold">입주하기</a></p>
+  <p class="center tiny muted light">토크는 입주 안 해도 <b>손님</b>으로 쓸 수 있어요.</p>
 </section>
 <%- include('partials/footer') %>

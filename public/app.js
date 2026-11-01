@@ -7,58 +7,58 @@
       body: new URLSearchParams(body),
       credentials: 'same-origin',
     });
+  const fmt = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : String(n));
 
-  // 좋아요 (새로고침 없이)
-  async function like(form, force) {
-    const btn = form.querySelector('.like');
-    const res = await post(form.action, force ? { force: 'like' } : {});
+  // ✦ 반짝 (새로고침 없이)
+  async function sparkle(form, force) {
+    const btn = form.querySelector('.spark');
+    const res = await post(form.action, force ? { force: '1' } : {});
     if (res.status === 401) return (location.href = '/login?next=' + encodeURIComponent(location.pathname));
     if (!res.ok) return;
-    const { liked, count } = await res.json();
-    btn.classList.toggle('on', liked);
-    btn.setAttribute('aria-pressed', String(liked));
-    btn.classList.remove('bump'); void btn.offsetWidth; btn.classList.add('bump');
-    const c = form.closest('.post')?.querySelector('.like-count');
-    if (c) c.textContent = count.toLocaleString('ko-KR');
+    const { on, count } = await res.json();
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', String(on));
+    btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop');
+    btn.querySelector('.spark-n').textContent = fmt(count);
   }
+
   document.addEventListener('submit', (e) => {
     const f = e.target;
-    if (f.matches('.like-form')) { e.preventDefault(); like(f); return; }
+    if (f.matches('.spark-form')) { e.preventDefault(); sparkle(f); return; }
     if (f.dataset.confirm && !confirm(f.dataset.confirm)) e.preventDefault();
   });
 
-  // 더블탭 좋아요 + 캐러셀 점
-  document.querySelectorAll('.carousel').forEach((car) => {
-    const slides = car.querySelector('.slides');
-    const dots = car.querySelectorAll('.dots span');
-    const badge = car.querySelector('.count-badge');
+  // 사진 넘기기 표시 + 더블탭 반짝
+  document.querySelectorAll('.photo').forEach((ph) => {
+    const slides = ph.querySelector('.slides');
+    const pips = ph.querySelectorAll('.pips span');
+    const pg = ph.querySelector('.pg');
     slides.addEventListener('scroll', () => {
       const i = Math.round(slides.scrollLeft / slides.clientWidth);
-      dots.forEach((d, j) => d.classList.toggle('on', i === j));
-      if (badge) badge.textContent = `${i + 1}/${dots.length}`;
+      pips.forEach((d, j) => d.classList.toggle('on', i === j));
+      if (pg) pg.textContent = `${i + 1} / ${pips.length}`;
     }, { passive: true });
-    car.addEventListener('dblclick', () => {
-      const form = car.closest('.post')?.querySelector('.like-form');
+    ph.addEventListener('dblclick', () => {
+      const form = ph.closest('.snap')?.querySelector('.spark-form');
       if (!form) return;
-      const pop = car.querySelector('.heart-pop');
-      pop.classList.remove('go'); void pop.offsetWidth; pop.classList.add('go');
-      like(form, true);
+      const b = ph.querySelector('.burst');
+      b.classList.remove('go'); void b.offsetWidth; b.classList.add('go');
+      sparkle(form, true);
     });
   });
 
-  // 팔로우 (새로고침 없이)
-  document.querySelectorAll('.follow-form').forEach((f) => {
+  // 찜하기 (새로고침 없이)
+  document.querySelectorAll('.pick-form').forEach((f) => {
     f.addEventListener('submit', async (e) => {
       e.preventDefault();
       const res = await post(f.action);
       if (!res.ok) return f.submit();
-      const { following, followers } = await res.json();
+      const { picked, fans } = await res.json();
       const b = f.querySelector('button');
-      b.textContent = following ? '팔로잉' : '팔로우';
-      b.classList.toggle('btn-primary', !following);
-      b.classList.toggle('btn-ghost', following);
-      const fc = document.querySelector('.follower-count');
-      if (fc) fc.textContent = followers.toLocaleString('ko-KR');
+      b.textContent = picked ? '✓ 찜함' : '♡ 찜하기';
+      b.classList.toggle('btn-lime', !picked);
+      const fc = document.querySelector('.fan-count');
+      if (fc) fc.textContent = fmt(fans);
     });
   });
 

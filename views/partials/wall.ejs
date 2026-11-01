@@ -1,0 +1,13 @@
+<% if (items.length === 0) { %>
+  <div class="box empty"><%= emptyText %></div>
+<% } else { %>
+<div class="wall">
+  <% items.forEach(s => { const imgs = images(s.images); %>
+    <a class="wall-item" href="/snap/<%= s.id %>">
+      <img src="/uploads/<%= imgs[0] %>" alt="@<%= s.username %>의 스냅" loading="lazy">
+      <% if (imgs.length > 1) { %><span class="wall-multi">+<%= imgs.length - 1 %></span><% } %>
+      <span class="wall-info"><span>@<%= s.username %></span><span>✦ <%= num(s.sparkles) %> · 💬 <%= num(s.says) %></span></span>
+    </a>
+  <% }) %>
+</div>
+<% } %>
