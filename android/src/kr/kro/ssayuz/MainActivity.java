@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.net.http.SslError;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.webkit.JavascriptInterface;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -36,6 +38,8 @@ public class MainActivity extends Activity {
         final FrameLayout root = new FrameLayout(this);
         web = new WebView(this);
         root.addView(web, new FrameLayout.LayoutParams(-1, -1));
+        // 로딩 중 하얀 화면 대신 ssayuz 배경색
+        web.setBackgroundColor(isNight() ? Color.parseColor("#131217") : Color.parseColor("#FBF5EA"));
         setContentView(root);
 
         // 안드로이드 15부터 화면이 상태바 밑까지 그려지므로, 상태바/내비게이션바 만큼 여백 주기
@@ -55,7 +59,7 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(false);
         s.setAllowContentAccess(false);
         s.setMediaPlaybackRequiresUserGesture(true);
-        s.setUserAgentString(s.getUserAgentString() + " SsayuzApp/1.0");
+        s.setUserAgentString(s.getUserAgentString() + " SsayuzApp/1.0.1");
         web.addJavascriptInterface(new Bridge(), "SsayuzApp");
         web.setWebViewClient(new Client());
 
@@ -142,13 +146,27 @@ public class MainActivity extends Activity {
 
         @Override
         public void onReceivedError(WebView view, WebResourceRequest req, WebResourceError err) {
-            if (req.isForMainFrame()) showOffline();
+            if (req.isForMainFrame()) showOffline(false);
+        }
+
+        // HTTPS 인증서 문제: 보안상 절대 무시하지 않고(cancel) 안내 화면을 보여 줌
+        @Override
+        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+            handler.cancel();
+            showOffline(true);
         }
     }
 
-    private void showOffline() {
-        boolean night = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+    private boolean isNight() {
+        return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
                 == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    private void showOffline(boolean ssl) {
+        boolean night = isNight();
+        String msg = ssl
+                ? "보안 연결(HTTPS)을 준비하고 있어요.<br>잠시 뒤에 다시 시도해 주세요."
+                : "인터넷에 연결되지 않았어요.<br>연결을 확인하고 다시 시도해 주세요.";
         String bg = night ? "#131217" : "#FBF5EA";
         String fg = night ? "#F3EDE2" : "#1A1820";
         String html = "<!doctype html><html><head><meta name=viewport content='width=device-width,initial-scale=1'>"
@@ -157,7 +175,7 @@ public class MainActivity extends Activity {
                 + "b{font-size:28px;background:#C9F23D;color:#1A1820;padding:6px 12px;border:2px solid #1A1820;border-radius:10px}"
                 + "p{opacity:.75;line-height:1.6}a{display:inline-block;margin-top:12px;padding:12px 22px;border-radius:12px;"
                 + "background:" + fg + ";color:" + bg + ";text-decoration:none;font-weight:bold}</style></head><body>"
-                + "<b>ssayuz</b><p>인터넷에 연결되지 않았어요.<br>연결을 확인하고 다시 시도해 주세요.</p>"
+                + "<b>ssayuz</b><p>" + msg + "</p>"
                 + "<a href='" + HOME + "'>다시 시도</a></body></html>";
         web.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
     }
@@ -179,7 +197,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String version() {
-            return "1.0";
+            return "1.0.1";
         }
     }
 }
