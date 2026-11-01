@@ -1,21 +1,19 @@
 <%- include('partials/header') %>
-<section class="box box-pad-lg narrow">
-  <span class="kicker">profile</span>
-  <h1 class="h2 mt">프로필 편집</h1>
-  <% if (error) { %><div class="alert mt"><%= error %></div><% } %>
-  <% if (saved) { %><div class="alert ok mt">저장했어요 ✓</div><% } %>
-  <form method="post" action="/settings?_csrf=<%= csrf %>" enctype="multipart/form-data" class="stack mt">
-    <div class="row">
-      <img class="av av-64" src="<%= avatar(user) %>" alt="" id="avatar-preview">
-      <div class="stack-sm">
-        <label class="btn btn-sm filebtn">사진 바꾸기<input type="file" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp" data-avatar-preview="#avatar-preview"></label>
-        <% if (user.avatar) { %><label class="small check"><input type="checkbox" name="remove_avatar" value="1"> 지금 사진 빼기</label><% } %>
-      </div>
-    </div>
+<div class="page-head"><a class="icon-btn" href="/@<%= user.username %>" aria-label="뒤로"><%- icon('back') %></a><h1 class="page-title">프로필 편집</h1><span class="icon-btn"></span></div>
+<section class="feed box-pad">
+  <% if (error) { %><div class="alert"><%= error %></div><% } %>
+  <% if (saved) { %><div class="alert ok">저장했어요 ✓ <a class="bold" href="/@<%= user.username %>">프로필 보기 →</a></div><% } %>
+  <form method="post" action="/settings" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="row"><%- avatar(Object.assign({}, user, { display_name: form.display_name }), 64) %><div class="small muted">프로필 사진은 이름 첫 글자로 만들어져요.</div></div>
     <label>아이디<input value="@<%= user.username %>" disabled></label>
-    <label>닉네임<input name="display_name" value="<%= user.display_name %>" required maxlength="20"></label>
-    <label>소개<textarea name="bio" rows="3" maxlength="150" placeholder="나는 이런 사람!"><%= user.bio %></textarea></label>
+    <label>이름<input name="display_name" value="<%= form.display_name %>" required maxlength="20"></label>
+    <label>소개<textarea name="bio" rows="3" maxlength="150" placeholder="나를 소개해 주세요"><%= form.bio %></textarea></label>
+    <label>링크<input name="link" value="<%= form.link %>" maxlength="200" placeholder="https://"></label>
     <button class="btn btn-ink btn-block">저장</button>
+  </form>
+  <form method="post" action="/logout" class="mt center">
+    <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="linkbtn">로그아웃</button>
   </form>
 </section>
 <%- include('partials/footer') %>

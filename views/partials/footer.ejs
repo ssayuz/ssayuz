@@ -1,15 +1,11 @@
 </main>
-<footer class="foot wrap"><b>ssayuz</b> · 말은 토크로, 순간은 스냅으로</footer>
+<footer class="foot"><b>ssayuz</b> · 짧게 말하고, 길게 이어지는 곳</footer>
 <nav class="dock" aria-label="빠른 이동">
-  <a href="/" class="<%= path === '/' ? 'on' : '' %>"><span class="d-ico">◐</span>홈</a>
-  <a href="/talk" class="<%= path.startsWith('/talk') ? 'on' : '' %>"><span class="d-ico">✎</span>토크</a>
-  <a href="/snap/new" class="d-plus"><span class="d-ico">＋</span>올리기</a>
-  <a href="/snap" class="<%= path === '/snap' || path.startsWith('/explore') ? 'on' : '' %>"><span class="d-ico">✦</span>스냅</a>
-  <% if (user) { %>
-    <a href="/@<%= user.username %>" class="<%= path.startsWith('/@' + user.username) ? 'on' : '' %>"><span class="d-ico">⌂</span>프로필</a>
-  <% } else { %>
-    <a href="/login"><span class="d-ico">→</span>로그인</a>
-  <% } %>
+  <a href="/" class="<%= path === '/' ? 'on' : '' %>"><%- icon('home', 26) %><span class="sr">홈</span></a>
+  <a href="/search" class="<%= path.startsWith('/search') ? 'on' : '' %>"><%- icon('search', 26) %><span class="sr">검색</span></a>
+  <a href="/compose" class="dock-plus"><%- icon('plus', 26) %><span class="sr">새 스레드</span></a>
+  <a href="/activity" class="<%= path.startsWith('/activity') ? 'on' : '' %>"><%- icon('heart', 26) %><% if (unreadNotes) { %><span class="badge"><%= unreadNotes > 99 ? '99+' : unreadNotes %></span><% } %><span class="sr">활동</span></a>
+  <a href="<%= user ? '/@' + user.username : '/login' %>" class="<%= user && path.startsWith('/@' + user.username) ? 'on' : '' %>"><%- icon('user', 26) %><span class="sr">프로필</span></a>
 </nav>
 </body>
 </html>

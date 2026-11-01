@@ -3,14 +3,14 @@
 서버 한 대에 **Docker + Caddy**로 올리는 방법이에요. Caddy가 HTTPS 인증서(Let's Encrypt)를 자동으로 받아 주고, 3개월마다 알아서 갱신해요.
 
 ```
-방문자 ──https──▶ Caddy (80/443, 인증서) ──▶ ssayuz 앱 (3000) ──▶ /data (DB + 사진)
+방문자 ──https──▶ Caddy (80/443, 인증서) ──▶ ssayuz 앱 (3000) ──▶ /data (DB)
 ```
 
 ## 0. 준비물
 
 - **공인 IP가 있는 리눅스 서버** (Ubuntu 22.04/24.04 추천)
   - 예: Oracle Cloud 무료 서버, AWS Lightsail, Vultr, 집 PC(공유기 포트포워딩) 등
-  - 사양은 1 vCPU / 1GB RAM이면 충분해요. 사진이 쌓이니 디스크는 넉넉할수록 좋아요.
+  - 사양은 1 vCPU / 1GB RAM이면 충분해요. 글만 저장해서 디스크도 많이 안 써요.
 - 서버에서 **80, 443 포트**가 열려 있어야 해요.
   - 클라우드라면 콘솔의 방화벽/보안 그룹에서 TCP 80, 443 (그리고 UDP 443) 허용
   - 서버 안에서 `ufw`를 쓰면: `sudo ufw allow 80,443/tcp && sudo ufw allow 443/udp`
@@ -79,13 +79,13 @@ www.{$DOMAIN} {
 
 ## 6. 백업
 
-DB와 사진은 Docker 볼륨 `ssayuz_ssayuz_data`(컨테이너 안 `/data`)에 저장돼요.
+DB는 Docker 볼륨 `ssayuz_ssayuz_data`(컨테이너 안 `/data`)에 저장돼요.
 
 ```bash
 # DB 스냅샷 (서비스 중에도 안전, 최근 14개 보관) → /data/backups/
 docker compose exec app npm run backup
 
-# DB + 사진 전체를 서버 폴더로 꺼내기
+# DB 전체를 서버 폴더로 꺼내기
 docker compose cp app:/data ./backup-$(date +%Y%m%d)
 ```
 
@@ -101,7 +101,7 @@ docker compose cp app:/data ./backup-$(date +%Y%m%d)
 
 - **https 접속이 안 돼요 / 인증서 오류**
   `docker compose logs caddy` 확인. 대부분 ① 도메인이 아직 서버 IP를 가리키지 않거나 ② 80/443 포트가 막혀 있는 경우예요. 고친 뒤 `docker compose restart caddy`.
-- **손님 IP가 전부 `172.xx`로 보여요**
+- **(참고) 접속 기록의 IP가 전부 `172.xx`로 보여요**
   Docker가 방문자 IP를 가리는 설정(userland-proxy)일 때 생겨요. `/etc/docker/daemon.json`에 `{"userland-proxy": false}`를 넣고 `sudo systemctl restart docker` 후 `docker compose up -d`.
 - **집 PC에서 돌릴 때**
   공유기에서 80, 443 포트를 그 PC로 포트포워딩하고, 통신사 IP가 바뀌면 내도메인.한국의 IP연결도 다시 바꿔야 해요.

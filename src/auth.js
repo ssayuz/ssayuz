@@ -45,7 +45,7 @@ function loadSession(req, res, next) {
   if (typeof sid === 'string' && /^[a-f0-9]{64}$/.test(sid)) {
     const row = db
       .prepare(
-        `SELECT u.id, u.username, u.display_name, u.bio, u.avatar, u.role, u.banned_at, s.created_at AS s_created
+        `SELECT u.id, u.username, u.display_name, u.bio, u.role, u.banned_at, s.created_at AS s_created
          FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?`
       )
       .get(sha(sid));

@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY . .
 
-# DB와 업로드 사진이 저장되는 곳 (볼륨으로 보존)
+# DB가 저장되는 곳 (볼륨으로 보존)
 RUN mkdir -p /data && chown -R node:node /data
 VOLUME /data
 USER node

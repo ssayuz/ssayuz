@@ -28,7 +28,7 @@ router.post('/signup', (req, res) => {
   const admins = String(process.env.ADMIN_USERNAMES || '').split(',').map((x) => x.trim().toLowerCase());
   if (admins.includes(username.toLowerCase())) db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").run(r.lastInsertRowid);
   createSession(res, Number(r.lastInsertRowid));
-  res.redirect('/snap');
+  res.redirect('/');
 });
 
 router.get('/login', (req, res) => {

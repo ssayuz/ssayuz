@@ -1,9 +1,9 @@
 <%- include('../partials/header') %>
-<section class="box narrow-wide chat" data-partner="<%= other.username %>" data-me="<%= user.id %>">
+<section class="feed chat" data-partner="<%= other.username %>" data-me="<%= user.id %>">
   <div class="box-head">
     <div class="row">
       <a href="/dm" class="bold" aria-label="메시지 목록">←</a>
-      <a href="/@<%= other.username %>"><img class="av av-36" src="<%= avatar(other) %>" alt=""></a>
+      <a href="/@<%= other.username %>"><%- avatar(other, 36) %></a>
       <div><a class="bold" href="/@<%= other.username %>">@<%= other.username %></a><div class="tiny muted light"><%= other.display_name %></div></div>
     </div>
   </div>

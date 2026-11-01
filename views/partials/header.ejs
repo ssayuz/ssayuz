@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><%= title ? title + ' — ssayuz' : 'ssayuz — 말은 토크로, 순간은 스냅으로' %></title>
+<title><%= title ? title + ' — ssayuz' : 'ssayuz — 짧게 말하고, 길게 이어지는 곳' %></title>
 <meta name="csrf-token" content="<%= csrf %>">
-<meta name="description" content="ssayuz — 말은 토크로, 순간은 스냅으로. 손님으로 가볍게 떠들고, 사진으로 나를 남기는 곳.">
+<meta name="description" content="ssayuz — 짧게 말하고, 길게 이어지는 곳. 500자 스레드로 생각을 나누고 답글로 대화해요.">
 <link rel="canonical" href="<%= siteUrl + path %>">
 <meta property="og:site_name" content="ssayuz">
 <meta property="og:type" content="website">
-<meta property="og:title" content="<%= title ? title + ' — ssayuz' : 'ssayuz — 말은 토크로, 순간은 스냅으로' %>">
-<meta property="og:description" content="손님으로 가볍게 떠들고, 사진으로 나를 남기는 곳.">
+<meta property="og:title" content="<%= title ? title + ' — ssayuz' : 'ssayuz — 짧게 말하고, 길게 이어지는 곳' %>">
+<meta property="og:description" content="500자 스레드로 생각을 나누고 답글로 대화해요.">
 <meta property="og:url" content="<%= siteUrl + path %>">
 <meta property="og:image" content="<%= siteUrl %>/static/og.png">
 <meta property="og:image:width" content="1200">
@@ -25,32 +25,24 @@
 </head>
 <body>
 <header class="topbar">
-  <div class="wrap topbar-in">
+  <div class="topbar-in">
     <a class="logo" href="/" aria-label="ssayuz 홈">ssayuz</a>
-    <nav class="topnav">
-      <a href="/talk" class="<%= path.startsWith('/talk') ? 'on' : '' %>">토크</a>
-      <a href="/snap" class="<%= path.startsWith('/snap') ? 'on' : '' %>">스냅</a>
-      <a href="/explore" class="<%= path.startsWith('/explore') ? 'on' : '' %>">둘러보기</a>
+    <nav class="mainnav" aria-label="메뉴">
+      <a href="/" class="<%= path === '/' ? 'on' : '' %>" title="홈"><%- icon('home', 26) %><span class="sr">홈</span></a>
+      <a href="/search" class="<%= path.startsWith('/search') ? 'on' : '' %>" title="검색"><%- icon('search', 26) %><span class="sr">검색</span></a>
+      <a href="/compose" class="<%= path.startsWith('/compose') ? 'on' : '' %> nav-plus" title="새 스레드"><%- icon('plus', 26) %><span class="sr">새 스레드</span></a>
+      <a href="/activity" class="<%= path.startsWith('/activity') ? 'on' : '' %>" title="활동"><%- icon('heart', 26) %><% if (unreadNotes) { %><span class="badge"><%= unreadNotes > 99 ? '99+' : unreadNotes %></span><% } %><span class="sr">활동</span></a>
+      <a href="<%= user ? '/@' + user.username : '/login' %>" class="<%= user && path.startsWith('/@' + user.username) ? 'on' : '' %>" title="프로필"><%- icon('user', 26) %><span class="sr">프로필</span></a>
     </nav>
-    <form class="topsearch" action="/explore" method="get" role="search">
-      <input type="search" name="q" placeholder="사람, 방 찾기" aria-label="사람, 방 찾기">
-    </form>
     <div class="topright">
       <% if (user) { %>
-        <a class="btn btn-lime btn-sm hide-sm" href="/snap/new">＋ 스냅</a>
-        <% if (isAdmin) { %><a class="iconlink hide-sm <%= path.startsWith('/admin') ? 'on' : '' %>" href="/admin" title="관리">🛡<span class="sr">관리</span></a><% } %>
-        <a class="iconlink <%= path.startsWith('/notifications') ? 'on' : '' %>" href="/notifications" title="알림">🔔<% if (unreadNotes) { %><span class="badge"><%= unreadNotes > 99 ? '99+' : unreadNotes %></span><% } %><span class="sr">알림</span></a>
-        <a class="iconlink <%= path.startsWith('/dm') ? 'on' : '' %>" href="/dm" title="메시지">✉<% if (unreadDms) { %><span class="badge"><%= unreadDms > 99 ? '99+' : unreadDms %></span><% } %><span class="sr">메시지</span></a>
-        <a href="/@<%= user.username %>" title="내 프로필"><img class="av av-36" src="<%= avatar(user) %>" alt="내 프로필"></a>
-        <form method="post" action="/logout" class="inline hide-sm">
-          <input type="hidden" name="_csrf" value="<%= csrf %>">
-          <button class="linkbtn small">로그아웃</button>
-        </form>
+        <% if (isAdmin) { %><a class="iconlink <%= path.startsWith('/admin') ? 'on' : '' %>" href="/admin" title="관리"><%- icon('shield') %><span class="sr">관리</span></a><% } %>
+        <a class="iconlink <%= path.startsWith('/dm') ? 'on' : '' %>" href="/dm" title="메시지"><%- icon('mail') %><% if (unreadDms) { %><span class="badge"><%= unreadDms > 99 ? '99+' : unreadDms %></span><% } %><span class="sr">메시지</span></a>
       <% } else { %>
         <a href="/login?next=<%= encodeURIComponent(path) %>" class="btn btn-sm">로그인</a>
-        <a class="btn btn-ink btn-sm" href="/signup">가입</a>
+        <a class="btn btn-ink btn-sm hide-sm" href="/signup">가입</a>
       <% } %>
     </div>
   </div>
 </header>
-<main class="wrap main">
+<main class="col">

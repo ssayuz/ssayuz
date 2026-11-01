@@ -1,9 +1,0 @@
-<nav class="tray" aria-label="스토리">
-  <% if (tray.me) { %>
-    <a class="tray-item" href="/stories/@<%= tray.me.username %>"><span class="tray-av seen-no"><img class="av av-64" src="<%= avatar(tray.me) %>" alt=""></span><span class="tray-name">내 스토리</span></a>
-  <% } %>
-  <a class="tray-item" href="/stories/new"><span class="tray-av tray-add">＋</span><span class="tray-name"><%= tray.me ? '더 올리기' : '스토리 올리기' %></span></a>
-  <% tray.others.forEach(t => { %>
-    <a class="tray-item" href="/stories/@<%= t.username %>"><span class="tray-av <%= t.unseen ? 'seen-no' : 'seen' %>"><img class="av av-64" src="<%= avatar(t) %>" alt=""></span><span class="tray-name">@<%= t.username %></span></a>
-  <% }) %>
-</nav>

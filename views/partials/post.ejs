@@ -1,0 +1,64 @@
+<%
+  const o = typeof opts !== 'undefined' ? opts : {};
+  const link = '/@' + p.username + '/post/' + p.id;
+%>
+<% if (p.missing) { %>
+  <div class="post post-gone <%= o.line ? 'has-line' : '' %>"><div class="post-grid"><span class="post-av"><span class="av av-40 av-ghost">?</span></span><div class="post-main muted">볼 수 없는 스레드예요.</div></div></div>
+<% } else if (p.deleted_at) { %>
+  <div class="post post-gone <%= o.line ? 'has-line' : '' %>" id="post-<%= p.id %>"><div class="post-grid"><span class="post-av"><span class="av av-40 av-ghost">×</span></span><div class="post-main muted">작성자가 삭제한 스레드예요.</div></div></div>
+<% } else { %>
+<article class="post <%= o.big ? 'post-big' : '' %> <%= o.line ? 'has-line' : '' %> <%= p.hidden_at ? 'is-hidden' : '' %>" id="post-<%= p.id %>" data-href="<%= link %>">
+  <% if (o.repostedBy) { %><div class="repost-by"><%- icon('repost', 15) %> @<%= o.repostedBy %>님이 리포스트함</div><% } %>
+  <div class="post-grid">
+    <a class="post-av" href="/@<%= p.username %>" tabindex="-1"><%- avatar(p, 40) %></a>
+    <div class="post-main">
+      <div class="post-head">
+        <a class="name" href="/@<%= p.username %>"><%= p.display_name %></a>
+        <span class="handle">@<%= p.username %></span>
+        <a class="time" href="<%= link %>" title="<%= fullTime(p.created_at) %>"><%= ago(p.created_at) %></a>
+        <% if (p.hidden_at) { %><span class="tag tag-hot">숨김</span><% } %>
+        <span class="grow"></span>
+        <details class="menu">
+          <summary class="icon-btn" aria-label="더 보기"><%- icon('more', 20) %></summary>
+          <div class="menu-pop">
+            <button type="button" class="menu-item" data-copy="<%= siteUrl + link %>"><%- icon('link', 18) %> 링크 복사</button>
+            <% if (user && user.id === p.user_id) { %>
+              <form method="post" action="/post/<%= p.id %>/delete" data-confirm="이 스레드를 삭제할까요?">
+                <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="menu-item danger">삭제</button>
+              </form>
+            <% } %>
+            <% if (isAdmin) { %>
+              <form method="post" action="/admin/hide">
+                <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="id" value="<%= p.id %>"><input type="hidden" name="back" value="<%= path %>">
+                <button class="menu-item"><%- icon('shield', 18) %> <%= p.hidden_at ? '숨김 해제' : '숨기기' %> (관리자)</button>
+              </form>
+            <% } %>
+          </div>
+        </details>
+      </div>
+      <% if (o.showParent && p.parent_username) { %><div class="reply-to">↳ <a href="/post/<%= p.parent_id %>">@<%= p.parent_username %></a>님에게 답글</div><% } %>
+      <div class="post-body"><%- richText(p.body) %></div>
+      <% if (p.quoted) { %><%- include('quote', { q: p.quoted }) %><% } %>
+      <% if (p.reply_policy !== 'all' && o.big) { %><div class="policy-note"><%= p.reply_policy === 'following' ? '작성자가 팔로우하는 사람만' : '언급된 사람만' %> 답글을 달 수 있어요</div><% } %>
+      <div class="actions">
+        <form method="post" action="/post/<%= p.id %>/like" class="inline like-form">
+          <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="back" value="<%= path %>">
+          <button class="act like <%= p.liked ? 'on' : '' %>" aria-pressed="<%= p.liked ? 'true' : 'false' %>" aria-label="좋아요"><%- icon('heart', 20) %><span class="n"><%= p.likes ? num(p.likes) : '' %></span></button>
+        </form>
+        <a class="act" href="<%= o.big ? '#reply' : '/compose?reply=' + p.id %>" aria-label="답글"><%- icon('reply', 20) %><span class="n"><%= p.replies ? num(p.replies) : '' %></span></a>
+        <details class="menu repost-menu">
+          <summary class="act <%= p.reposted ? 'on-repost' : '' %>" aria-label="리포스트"><%- icon('repost', 20) %><span class="n"><%= p.reposts ? num(p.reposts) : '' %></span></summary>
+          <div class="menu-pop">
+            <form method="post" action="/post/<%= p.id %>/repost" class="repost-form">
+              <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="back" value="<%= path %>">
+              <button class="menu-item"><%- icon('repost', 18) %> <span class="repost-label"><%= p.reposted ? '리포스트 취소' : '리포스트' %></span></button>
+            </form>
+            <a class="menu-item" href="/compose?quote=<%= p.id %>"><%- icon('quote', 18) %> 인용하기</a>
+          </div>
+        </details>
+        <button type="button" class="act" data-copy="<%= siteUrl + link %>" aria-label="링크 공유"><%- icon('share', 20) %></button>
+      </div>
+    </div>
+  </div>
+</article>
+<% } %>

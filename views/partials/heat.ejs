@@ -1,4 +1,0 @@
-<% const net = t.fire - t.ice; %>
-<div class="heat <%= net >= threshold ? 'blaze' : net > 0 ? 'warm' : net < 0 ? 'cold' : '' %>" title="🔥 <%= t.fire %> · 🧊 <%= t.ice %>">
-  <span class="heat-n"><%= net > 0 ? '+' + net : net %></span><span class="heat-l"><%= net < 0 ? '🧊 냉랭' : '🔥 화력' %></span>
-</div>

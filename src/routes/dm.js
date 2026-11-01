@@ -16,7 +16,7 @@ function findThread(me, other) {
 }
 
 function getPartner(req, res) {
-  const other = db.prepare('SELECT id, username, display_name, avatar, banned_at FROM users WHERE username = ?').get(String(req.params.username));
+  const other = db.prepare('SELECT id, username, display_name, banned_at FROM users WHERE username = ?').get(String(req.params.username));
   if (!other) { res.status(404).render('error', { title: '404', message: '없는 사람이에요.' }); return null; }
   if (other.id === req.user.id) { res.redirect('/dm'); return null; }
   return other;
@@ -33,7 +33,7 @@ router.get('/dm', (req, res) => {
   const me = req.user.id;
   const threads = db
     .prepare(
-      `SELECT t.id, t.last_at, u.username, u.display_name, u.avatar,
+      `SELECT t.id, t.last_at, u.username, u.display_name,
         (SELECT body FROM dm_messages m WHERE m.thread_id = t.id ORDER BY m.id DESC LIMIT 1) AS last_body,
         (SELECT sender_id FROM dm_messages m WHERE m.thread_id = t.id ORDER BY m.id DESC LIMIT 1) AS last_sender,
         (SELECT COUNT(*) FROM dm_messages m WHERE m.thread_id = t.id AND m.sender_id != ? AND m.read_at IS NULL) AS unread

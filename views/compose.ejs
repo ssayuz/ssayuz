@@ -1,0 +1,12 @@
+<%- include('partials/header') %>
+<div class="page-head"><a class="icon-btn" href="/" data-back aria-label="뒤로"><%- icon('back') %></a><h1 class="page-title"><%= title %></h1><span class="icon-btn"></span></div>
+<section class="feed">
+  <% if (error) { %><div class="alert"><%= error %></div><% } %>
+  <% if (parent) { %><%- include('partials/post', { p: parent, opts: { line: true } }) %><% } %>
+  <%- include('partials/composer', { cfg: {
+        parentId: parent && parent.id, quoteId: quote && quote.id, parts, policy, maxParts: THREAD_MAX_PARTS,
+        placeholder: parent ? '@' + parent.username + '님에게 답글...' : null,
+        quoteHtml: quote ? include('partials/quote', { q: quote }) : null } }) %>
+</section>
+<p class="center tiny muted mt">Ctrl(⌘) + Enter로 바로 게시할 수 있어요.</p>
+<%- include('partials/footer') %>

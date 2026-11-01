@@ -1,14 +1,9 @@
 <%- include('partials/header') %>
-<section class="box narrow">
-  <div class="box-head"><h1 class="box-title"><a href="/@<%= member.username %>">@<%= member.username %></a>의 <%= list === 'followers' ? '팔로워' : '팔로잉' %></h1></div>
-  <div class="box-pad">
-    <% if (people.length === 0) { %><div class="empty small">아직 아무도 없어요.</div><% } %>
-    <% people.forEach(u => { %>
-      <a class="person" href="/@<%= u.username %>">
-        <img class="av av-44" src="<%= avatar(u) %>" alt="">
-        <div><div class="bold">@<%= u.username %></div><div class="tiny muted light"><%= u.display_name %></div></div>
-      </a>
-    <% }) %>
-  </div>
+<div class="page-head"><a class="icon-btn" href="/@<%= member.username %>" aria-label="뒤로"><%- icon('back') %></a><h1 class="page-title">@<%= member.username %> · <%= list === 'followers' ? '팔로워' : '팔로잉' %></h1><span class="icon-btn"></span></div>
+<section class="feed">
+  <% if (people.length === 0) { %><div class="empty">아직 아무도 없어요.</div><% } %>
+  <% people.forEach(u => { %>
+    <a class="person" href="/@<%= u.username %>"><%- avatar(u, 44) %><div class="grow"><div class="bold"><%= u.display_name %></div><div class="small muted">@<%= u.username %></div><% if (u.bio) { %><div class="small person-bio"><%= u.bio %></div><% } %></div></a>
+  <% }) %>
 </section>
 <%- include('partials/footer') %>
