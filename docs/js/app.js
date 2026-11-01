@@ -17,6 +17,26 @@ let sb = null;
 const isAdmin = () => !!state.me && state.me.role === 'admin' && !state.me.banned_at;
 const emailOf = (username) => `${username.toLowerCase()}@${EMAIL_DOMAIN}`;
 
+// 링크 복사: 클립보드 API(HTTPS) → 안 되면 예전 방식(execCommand)
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; }
+  } catch { /* 아래 방식으로 */ }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.top = '0';
+  ta.style.opacity = '0';
+  document.body.append(ta);
+  ta.select();
+  ta.setSelectionRange(0, text.length);
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch { ok = false; }
+  ta.remove();
+  return ok;
+}
+
 function toast(text) {
   let el = document.querySelector('.toast');
   if (!el) { el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status'); document.body.append(el); }
@@ -885,11 +905,14 @@ document.addEventListener('click', async (e) => {
   const copy = t.closest('[data-copy]');
   if (copy) {
     e.preventDefault();
-    try {
-      if (navigator.share && matchMedia('(pointer: coarse)').matches) await navigator.share({ url: copy.dataset.copy });
-      else { await navigator.clipboard.writeText(copy.dataset.copy); toast('링크를 복사했어요'); }
-    } catch { /* 취소 */ }
     copy.closest('details')?.removeAttribute('open');
+    const url = copy.dataset.copy;
+    // 휴대폰: 공유 창 (HTTPS에서만 됨)
+    if (navigator.share && window.isSecureContext && matchMedia('(pointer: coarse)').matches) {
+      try { await navigator.share({ url }); return; } catch (err) { if (err && err.name === 'AbortError') return; }
+    }
+    if (await copyText(url)) toast('링크를 복사했어요');
+    else prompt('아래 링크를 길게 눌러 복사하세요', url);
     return;
   }
 
