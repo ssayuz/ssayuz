@@ -1,0 +1,12 @@
+<%- include('partials/header') %>
+<section class="card narrow pad">
+  <h1 class="h2"><a href="/u/<%= profile.username %>"><%= profile.username %></a> · <%= list === 'followers' ? '팔로워' : '팔로잉' %></h1>
+  <% if (people.length === 0) { %><div class="empty small">아직 아무도 없어요.</div><% } %>
+  <% people.forEach(u => { %>
+    <a class="me-row hover" href="/u/<%= u.username %>">
+      <img class="av av-44" src="<%= avatar(u) %>" alt="">
+      <div><div class="strong"><%= u.username %></div><div class="muted small"><%= u.display_name %></div></div>
+    </a>
+  <% }) %>
+</section>
+<%- include('partials/footer') %>

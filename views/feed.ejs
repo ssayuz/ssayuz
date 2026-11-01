@@ -1,0 +1,34 @@
+<%- include('partials/header') %>
+<div class="feed-layout">
+  <div class="feed-col">
+    <% if (posts.length === 0) { %>
+      <section class="card center pad-lg">
+        <h2 class="h2">피드가 비어 있어요</h2>
+        <p class="muted">사람들을 팔로우하거나 첫 사진을 올려 보세요.</p>
+        <p><a class="btn btn-primary" href="/p/new">사진 올리기</a> <a class="btn btn-ghost" href="/explore">탐색하기</a></p>
+      </section>
+    <% } %>
+    <% posts.forEach(p => { %><%- include('partials/postcard', { p, back: 'feed' }) %><% }) %>
+    <% if (nextBefore) { %><p class="center"><a class="btn btn-ghost" href="/feed?before=<%= nextBefore %>">더 보기</a></p><% } %>
+  </div>
+  <aside class="feed-side">
+    <div class="me-row">
+      <img class="av av-44" src="<%= avatar(user) %>" alt="">
+      <div><a class="strong" href="/u/<%= user.username %>"><%= user.username %></a><div class="muted small"><%= user.display_name %></div></div>
+    </div>
+    <% if (suggestions.length) { %>
+      <div class="muted small strong side-title">회원님을 위한 추천</div>
+      <% suggestions.forEach(s => { %>
+        <div class="me-row">
+          <img class="av av-32" src="<%= avatar(s) %>" alt="">
+          <div class="grow"><a class="strong" href="/u/<%= s.username %>"><%= s.username %></a><div class="muted small">팔로워 <%= num(s.followers) %></div></div>
+          <form method="post" action="/u/<%= s.username %>/follow" class="inline">
+            <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="back" value="feed">
+            <button class="linkbtn accent">팔로우</button>
+          </form>
+        </div>
+      <% }) %>
+    <% } %>
+  </aside>
+</div>
+<%- include('partials/footer') %>

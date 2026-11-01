@@ -1,0 +1,11 @@
+<% if (pages > 1) {
+  const start = Math.max(1, Math.min(page - 4, pages - 9));
+  const end = Math.min(pages, start + 9); %>
+<nav class="pager" aria-label="페이지">
+  <% if (start > 1) { %><a href="<%= qs(base, Object.assign({}, params, { page: start - 1 })) %>">‹</a><% } %>
+  <% for (let i = start; i <= end; i++) { %>
+    <% if (i === page) { %><strong><%= i %></strong><% } else { %><a href="<%= qs(base, Object.assign({}, params, { page: i })) %>"><%= i %></a><% } %>
+  <% } %>
+  <% if (end < pages) { %><a href="<%= qs(base, Object.assign({}, params, { page: end + 1 })) %>">›</a><% } %>
+</nav>
+<% } %>

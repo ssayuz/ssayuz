@@ -1,0 +1,20 @@
+<%- include('partials/header') %>
+<% if (people) { %>
+  <section class="card pad">
+    <h2 class="box-title">'<%= q %>' 사람 검색 결과</h2>
+    <% if (people.length === 0) { %><div class="empty small">일치하는 사용자가 없어요.</div><% } %>
+    <% people.forEach(u => { %>
+      <a class="me-row hover" href="/u/<%= u.username %>">
+        <img class="av av-44" src="<%= avatar(u) %>" alt="">
+        <div><div class="strong"><%= u.username %></div><div class="muted small"><%= u.display_name %><%= u.bio ? ' · ' + u.bio : '' %></div></div>
+      </a>
+    <% }) %>
+  </section>
+<% } %>
+<div class="section-head">
+  <h1 class="h2"><%= tag ? '#' + tag : '탐색' %></h1>
+  <form action="/explore" method="get" class="inline-search"><input type="search" name="tag" value="<%= tag %>" placeholder="#해시태그"></form>
+</div>
+<%- include('partials/grid', { items: posts, emptyText: tag ? '이 해시태그의 사진이 아직 없어요.' : '아직 올라온 사진이 없어요.' }) %>
+<% if (nextBefore) { %><p class="center"><a class="btn btn-ghost" href="<%= qs('/explore', { tag, before: nextBefore }) %>">더 보기</a></p><% } %>
+<%- include('partials/footer') %>

@@ -1,0 +1,15 @@
+</main>
+<footer class="foot wrap">싸유즈 · 갤러리와 사진을 한 곳에서</footer>
+<nav class="bottomnav" aria-label="하단 메뉴">
+  <a href="/" class="<%= path === '/' ? 'on' : '' %>"><span class="ico">⌂</span>홈</a>
+  <a href="/g" class="<%= path.startsWith('/g') ? 'on' : '' %>"><span class="ico">☰</span>갤러리</a>
+  <a href="/p/new" class="plus"><span class="ico">＋</span>올리기</a>
+  <a href="/feed" class="<%= path.startsWith('/feed') ? 'on' : '' %>"><span class="ico">▦</span>피드</a>
+  <% if (user) { %>
+    <a href="/u/<%= user.username %>" class="<%= path.startsWith('/u/' + user.username) ? 'on' : '' %>"><img class="av av-22" src="<%= avatar(user) %>" alt="">나</a>
+  <% } else { %>
+    <a href="/login"><span class="ico">◯</span>로그인</a>
+  <% } %>
+</nav>
+</body>
+</html>

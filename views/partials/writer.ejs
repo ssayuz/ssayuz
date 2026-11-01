@@ -1,0 +1,1 @@
+<% if (w.username) { %><a class="writer gonic" href="/u/<%= w.username %>" title="고정닉"><%= w.display_name %><span class="gonic-badge" aria-label="고닉">✓</span></a><% } else { %><span class="writer"><%= w.nickname %><% if (w.ip_prefix) { %><span class="ip">(<%= w.ip_prefix %>)</span><% } %></span><% } %>

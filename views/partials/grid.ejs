@@ -1,0 +1,13 @@
+<% if (items.length === 0) { %>
+  <div class="empty"><%= emptyText %></div>
+<% } else { %>
+<div class="grid">
+  <% items.forEach(p => { const imgs = images(p.images); %>
+    <a class="tile" href="/p/<%= p.id %>">
+      <img src="/uploads/<%= imgs[0] %>" alt="" loading="lazy">
+      <% if (imgs.length > 1) { %><span class="multi" aria-label="여러 장">❐</span><% } %>
+      <% if (p.likes !== undefined) { %><span class="tile-hover"><span>♥ <%= num(p.likes) %></span><span>💬 <%= num(p.ccount) %></span></span><% } %>
+    </a>
+  <% }) %>
+</div>
+<% } %>

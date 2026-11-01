@@ -1,0 +1,42 @@
+<% const imgs = images(p.images); %>
+<article class="card post" id="post-<%= p.id %>">
+  <header class="post-head">
+    <a href="/u/<%= p.username %>" class="ring"><img class="av av-32" src="<%= avatar(p) %>" alt=""></a>
+    <div class="post-who">
+      <a href="/u/<%= p.username %>" class="strong"><%= p.username %></a>
+      <span class="muted small">· <%= ago(p.created_at) %></span>
+    </div>
+  </header>
+  <div class="carousel" data-post="<%= p.id %>">
+    <div class="slides">
+      <% imgs.forEach((src, i) => { %>
+        <img src="/uploads/<%= src %>" alt="<%= p.username %>님의 사진 <%= i + 1 %>" loading="lazy">
+      <% }) %>
+    </div>
+    <% if (imgs.length > 1) { %>
+      <div class="dots"><% imgs.forEach((_, i) => { %><span class="<%= i === 0 ? 'on' : '' %>"></span><% }) %></div>
+      <span class="count-badge">1/<%= imgs.length %></span>
+    <% } %>
+    <span class="heart-pop" aria-hidden="true">♥</span>
+  </div>
+  <div class="post-actions">
+    <form method="post" action="/p/<%= p.id %>/like" class="inline like-form">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="hidden" name="back" value="<%= typeof back !== 'undefined' ? back : '' %>">
+      <button class="iconbtn like <%= p.liked ? 'on' : '' %>" aria-pressed="<%= p.liked ? 'true' : 'false' %>" aria-label="좋아요"><span class="h-off">♡</span><span class="h-on">♥</span></button>
+    </form>
+    <a class="iconbtn" href="/p/<%= p.id %>#comments" aria-label="댓글">💬</a>
+  </div>
+  <div class="post-body">
+    <div class="strong">좋아요 <span class="like-count"><%= num(p.likes) %></span>개</div>
+    <% if (p.caption) { %>
+      <p class="caption"><a href="/u/<%= p.username %>" class="strong"><%= p.username %></a> <%- richText(p.caption) %></p>
+    <% } %>
+    <% if (p.comments) { %>
+      <% if (p.ccount > p.comments.length) { %><a class="muted small" href="/p/<%= p.id %>#comments">댓글 <%= p.ccount %>개 모두 보기</a><% } %>
+      <% p.comments.forEach(c => { %>
+        <p class="cline"><a href="/u/<%= c.username %>" class="strong"><%= c.username %></a> <%- richText(c.body) %></p>
+      <% }) %>
+    <% } %>
+  </div>
+</article>

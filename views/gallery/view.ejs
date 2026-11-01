@@ -1,0 +1,97 @@
+<%- include('../partials/header') %>
+<div class="gal-head"><h1 class="gal-title"><a href="/g/<%= g.slug %>"><%= g.is_minor ? 'ⓜ ' : '' %><%= g.name %> 갤러리</a></h1></div>
+<% const msgs = { voted: '이미 추천/비추천했어요.', bad_pw: '비밀번호가 맞지 않거나 권한이 없어요.', comment_len: '댓글은 1~1000자로 입력해 주세요.', comment_pw: '유동 댓글은 비밀번호(2자 이상)가 필요해요.', slow: '너무 빨라요. 잠시 후 다시 시도해 주세요.' }; %>
+<% if (msgs[msg]) { %><div class="alert"><%= msgs[msg] %></div><% } %>
+<article class="card gview">
+  <header class="gview-head">
+    <h2 class="gview-title"><span class="head-tag">[<%= post.head %>]</span> <%= post.title %><% if (concept) { %> <span class="concept-badge">개념글</span><% } %></h2>
+    <div class="gview-meta">
+      <span><%- include('../partials/writer', { w: post }) %></span>
+      <span class="muted small"><%= fullTime(post.created_at) %></span>
+      <span class="grow"></span>
+      <span class="muted small">조회 <%= num(post.views) %> · 추천 <%= post.up %> · 댓글 <%= comments.length %></span>
+    </div>
+  </header>
+  <div class="gview-body">
+    <% imgs.forEach(src => { %><img src="/uploads/<%= src %>" alt="" loading="lazy"><% }) %>
+    <% if (post.body) { %><div class="gtext"><%- nl2br(post.body) %></div><% } %>
+  </div>
+  <div class="vote" id="vote">
+    <form method="post" action="/g/<%= g.slug %>/<%= post.id %>/vote" class="inline">
+      <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="dir" value="up">
+      <button class="vote-btn up <%= myVote === 1 ? 'on' : '' %>"><span class="vote-n"><%= post.up %></span><span>추천 ▲</span></button>
+    </form>
+    <form method="post" action="/g/<%= g.slug %>/<%= post.id %>/vote" class="inline">
+      <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="dir" value="down">
+      <button class="vote-btn down <%= myVote === -1 ? 'on' : '' %>"><span class="vote-n"><%= post.down %></span><span>비추 ▼</span></button>
+    </form>
+  </div>
+  <div class="gview-tools">
+    <a class="btn btn-ghost btn-sm" href="/g/<%= g.slug %>">목록</a>
+    <% if (post.user_id) { %>
+      <% if (user && user.id === post.user_id) { %>
+        <form method="post" action="/g/<%= g.slug %>/<%= post.id %>/delete" class="inline" data-confirm="글을 삭제할까요?">
+          <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-sm">삭제</button>
+        </form>
+      <% } %>
+    <% } else { %>
+      <details class="pwdel">
+        <summary class="btn btn-ghost btn-sm">삭제</summary>
+        <form method="post" action="/g/<%= g.slug %>/<%= post.id %>/delete" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <input type="password" name="password" placeholder="글 비밀번호" required>
+          <button class="btn btn-danger btn-sm">확인</button>
+        </form>
+      </details>
+    <% } %>
+  </div>
+</article>
+
+<section class="card gcomments" id="comments">
+  <h3 class="box-title dc-bar">전체 댓글 <span class="accent-dc"><%= comments.length %></span>개</h3>
+  <% if (comments.length === 0) { %><div class="empty small">첫 댓글을 남겨 보세요.</div><% } %>
+  <ul class="clist">
+    <% comments.forEach(c => { %>
+      <li id="c<%= c.id %>">
+        <div class="c-writer"><%- include('../partials/writer', { w: c }) %></div>
+        <div class="c-body"><%- nl2br(c.body) %></div>
+        <div class="c-side">
+          <span class="muted small"><%= dcTime(c.created_at) %></span>
+          <% if (c.user_id) { %>
+            <% if (user && user.id === c.user_id) { %>
+              <form method="post" action="/g/<%= g.slug %>/<%= post.id %>/comments/<%= c.id %>/delete" class="inline" data-confirm="댓글을 삭제할까요?">
+                <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="linkbtn small" aria-label="댓글 삭제">✕</button>
+              </form>
+            <% } %>
+          <% } else { %>
+            <details class="pwdel inline-det">
+              <summary class="linkbtn small" aria-label="댓글 삭제">✕</summary>
+              <form method="post" action="/g/<%= g.slug %>/<%= post.id %>/comments/<%= c.id %>/delete" class="inline">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <input type="password" name="password" placeholder="비밀번호" required>
+                <button class="btn btn-danger btn-sm">삭제</button>
+              </form>
+            </details>
+          <% } %>
+        </div>
+      </li>
+    <% }) %>
+  </ul>
+  <form method="post" action="/g/<%= g.slug %>/<%= post.id %>/comment" class="gcomment-form <%= user ? "" : "anon" %>">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <% if (!user) { %>
+      <div class="cf-id">
+        <input name="nickname" maxlength="20" placeholder="닉네임 (ㅇㅇ)">
+        <input type="password" name="password" minlength="2" maxlength="100" placeholder="비밀번호" required autocomplete="new-password">
+      </div>
+    <% } %>
+    <textarea name="body" rows="3" maxlength="1000" required placeholder="댓글을 입력해 주세요."></textarea>
+    <button class="btn btn-primary">등록</button>
+  </form>
+</section>
+
+<nav class="prevnext card">
+  <% if (next) { %><a href="/g/<%= g.slug %>/<%= next.id %>"><span class="muted small">다음글 ▲</span> <%= next.title %></a><% } %>
+  <% if (prev) { %><a href="/g/<%= g.slug %>/<%= prev.id %>"><span class="muted small">이전글 ▼</span> <%= prev.title %></a><% } %>
+</nav>
+<%- include('../partials/footer') %>

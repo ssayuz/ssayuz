@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title ? title + ' · 싸유즈' : '싸유즈 - 갤러리 & 사진 SNS' %></title>
+<meta name="csrf-token" content="<%= csrf %>">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="/">싸유즈</a>
+    <nav class="topnav">
+      <a href="/g" class="<%= path.startsWith('/g') ? 'on' : '' %>">갤러리</a>
+      <a href="/feed" class="<%= path.startsWith('/feed') || path.startsWith('/p/') ? 'on' : '' %>">피드</a>
+      <a href="/explore" class="<%= path.startsWith('/explore') ? 'on' : '' %>">탐색</a>
+    </nav>
+    <form class="topsearch" action="/explore" method="get" role="search">
+      <input type="search" name="q" placeholder="사람 검색" aria-label="사람 검색">
+    </form>
+    <div class="topright">
+      <% if (user) { %>
+        <a class="btn btn-primary btn-sm hide-mobile" href="/p/new">+ 새 게시물</a>
+        <a href="/u/<%= user.username %>" class="me" title="내 프로필"><img class="av av-28" src="<%= avatar(user) %>" alt="내 프로필"></a>
+        <form method="post" action="/logout" class="inline hide-mobile">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button class="linkbtn">로그아웃</button>
+        </form>
+      <% } else { %>
+        <a href="/login?next=<%= encodeURIComponent(path) %>" class="btn btn-ghost btn-sm">로그인</a>
+        <a class="btn btn-primary btn-sm" href="/signup">가입</a>
+      <% } %>
+    </div>
+  </div>
+</header>
+<main class="wrap main">

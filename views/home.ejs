@@ -1,0 +1,49 @@
+<%- include('partials/header') %>
+<section class="hero">
+  <div>
+    <h1 class="hero-title">떠들 땐 <span class="accent-dc">갤러리</span>, 남길 땐 <span class="accent-ig">피드</span></h1>
+    <p class="muted">유동으로 아무 말이나 하고, 고닉으로 사진을 남기는 곳.</p>
+  </div>
+  <div class="hero-cta">
+    <a class="btn btn-primary" href="/g">갤러리 둘러보기</a>
+    <a class="btn btn-ghost" href="/explore">사진 탐색</a>
+  </div>
+</section>
+
+<div class="gal-chips">
+  <% galleries.forEach(g => { %><a class="chip" href="/g/<%= g.slug %>"><%= g.is_minor ? 'ⓜ ' : '' %><%= g.name %></a><% }) %>
+  <a class="chip chip-more" href="/g">전체 갤러리 →</a>
+</div>
+
+<div class="cols-2">
+  <section class="card">
+    <h2 class="box-title">🔥 실시간 개념글</h2>
+    <% if (concept.length === 0) { %>
+      <div class="empty small">아직 개념글이 없어요. 추천을 눌러 개념글을 만들어 주세요!</div>
+    <% } else { %>
+      <ol class="rank">
+        <% concept.forEach((p, i) => { %>
+          <li><span class="rank-n"><%= i + 1 %></span><a href="/g/<%= p.slug %>/<%= p.id %>"><%= p.title %></a><% if (p.ccount) { %> <span class="reply">[<%= p.ccount %>]</span><% } %><span class="muted small rank-g"><%= p.gname %></span></li>
+        <% }) %>
+      </ol>
+    <% } %>
+  </section>
+  <section class="card">
+    <h2 class="box-title">🆕 최신글</h2>
+    <% if (latest.length === 0) { %>
+      <div class="empty small">첫 글의 주인공이 되어 보세요. <a href="/g/free/write">자유갤에 글쓰기</a></div>
+    <% } else { %>
+      <ul class="rank">
+        <% latest.forEach(p => { %>
+          <li><span class="muted small rank-t"><%= dcTime(p.created_at) %></span><a href="/g/<%= p.slug %>/<%= p.id %>"><%= p.title %></a><% if (p.ccount) { %> <span class="reply">[<%= p.ccount %>]</span><% } %><span class="muted small rank-g"><%= p.gname %></span></li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+</div>
+
+<section class="section">
+  <div class="section-head"><h2 class="box-title">📸 인기 사진</h2><a class="small" href="/explore">더 보기 →</a></div>
+  <%- include('partials/grid', { items: photos, emptyText: '아직 올라온 사진이 없어요.' }) %>
+</section>
+<%- include('partials/footer') %>

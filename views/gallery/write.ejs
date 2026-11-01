@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<div class="gal-head"><h1 class="gal-title"><a href="/g/<%= g.slug %>"><%= g.name %> 갤러리</a></h1></div>
+<section class="card pad-lg">
+  <% if (error) { %><div class="alert"><%= error %></div><% } %>
+  <form method="post" action="/g/<%= g.slug %>/write?_csrf=<%= csrf %>" enctype="multipart/form-data" class="stack">
+    <% if (user) { %>
+      <div class="small">고닉 <strong><%= user.display_name %></strong> 으로 작성해요. <span class="muted">(유동으로 쓰려면 로그아웃)</span></div>
+    <% } else { %>
+      <div class="row-2">
+        <label>닉네임<input name="nickname" value="<%= form.nickname || '' %>" maxlength="20" placeholder="ㅇㅇ"></label>
+        <label>비밀번호<input type="password" name="password" required minlength="2" maxlength="100" placeholder="삭제할 때 필요해요" autocomplete="new-password"></label>
+      </div>
+      <p class="small muted">유동으로 작성하면 IP 앞자리가 함께 표시돼요.</p>
+    <% } %>
+    <div class="row-head">
+      <select name="head" aria-label="말머리">
+        <% heads.forEach(h => { %><option <%= form.head === h ? 'selected' : '' %>><%= h %></option><% }) %>
+      </select>
+      <input name="title" value="<%= form.title || '' %>" required maxlength="80" placeholder="제목을 입력해 주세요." class="grow">
+    </div>
+    <textarea name="body" rows="14" maxlength="20000" placeholder="내용을 입력해 주세요."><%= form.body || '' %></textarea>
+    <label class="dropzone small-dz">
+      <input type="file" name="images" accept="image/jpeg,image/png,image/gif,image/webp" multiple data-preview="#preview">
+      <span class="dz-text">🖼 이미지 첨부 <span class="muted small">(선택 · 최대 10장)</span></span>
+    </label>
+    <div id="preview" class="preview"></div>
+    <div class="right"><a class="btn btn-ghost" href="/g/<%= g.slug %>">취소</a> <button class="btn btn-primary">등록</button></div>
+  </form>
+</section>
+<%- include('../partials/footer') %>

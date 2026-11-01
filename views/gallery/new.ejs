@@ -1,0 +1,14 @@
+<%- include('../partials/header') %>
+<section class="card narrow pad-lg">
+  <h1 class="h2">ⓜ 마이너 갤러리 만들기</h1>
+  <p class="muted small">관심사가 같은 사람들이 모일 갤러리를 직접 만들어 보세요.</p>
+  <% if (error) { %><div class="alert"><%= error %></div><% } %>
+  <form method="post" action="/g/new" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <label>갤러리 이름<input name="name" value="<%= form.name || '' %>" required maxlength="20" placeholder="예: 고양이"></label>
+    <label>주소<div class="addon"><span>/g/</span><input name="slug" value="<%= form.slug || '' %>" required pattern="[a-z0-9_]{2,20}" maxlength="20" placeholder="cat"></div></label>
+    <label>설명<input name="description" value="<%= form.description || '' %>" maxlength="100" placeholder="어떤 갤러리인가요?"></label>
+    <button class="btn btn-primary btn-block">만들기</button>
+  </form>
+</section>
+<%- include('../partials/footer') %>
