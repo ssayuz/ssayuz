@@ -1,10 +1,10 @@
 <%- include('../partials/header') %>
 <div class="snap-detail">
   <%- include('../partials/snapcard', { s: snap, full: true }) %>
-  <section class="box box-pad" id="says">
-    <h2 class="box-title">💬 한마디 <%= snap.says %></h2>
-    <% if (snap.says_list.length === 0) { %><div class="empty small">첫 한마디를 남겨 보세요.</div><% } %>
-    <% snap.says_list.forEach(c => { %>
+  <section class="box box-pad" id="comments">
+    <h2 class="box-title">💬 댓글 <%= snap.ccount %></h2>
+    <% if (snap.comment_list.length === 0) { %><div class="empty small">첫 댓글을 남겨 보세요.</div><% } %>
+    <% snap.comment_list.forEach(c => { %>
       <div class="say-row">
         <a href="/@<%= c.username %>"><img class="av av-36" src="<%= avatar(c) %>" alt=""></a>
         <div class="grow">
@@ -12,20 +12,20 @@
           <span class="tiny muted light"><%= ago(c.created_at) %></span>
         </div>
         <% if (user && (user.id === c.user_id || user.id === snap.user_id)) { %>
-          <form method="post" action="/snap/<%= snap.id %>/say/<%= c.id %>/delete" class="inline" data-confirm="한마디를 지울까요?">
+          <form method="post" action="/snap/<%= snap.id %>/comments/<%= c.id %>/delete" class="inline" data-confirm="댓글을 지울까요?">
             <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="linkbtn tiny">지우기</button>
           </form>
         <% } %>
       </div>
     <% }) %>
     <% if (user) { %>
-      <form method="post" action="/snap/<%= snap.id %>/say" class="say-form">
+      <form method="post" action="/snap/<%= snap.id %>/comment" class="say-form">
         <input type="hidden" name="_csrf" value="<%= csrf %>">
-        <input name="body" maxlength="1000" placeholder="한마디 남기기..." required autocomplete="off" aria-label="한마디">
+        <input name="body" maxlength="1000" placeholder="댓글 달기..." required autocomplete="off" aria-label="댓글">
         <button class="btn btn-ink btn-sm">보내기</button>
       </form>
     <% } else { %>
-      <p class="small muted"><a class="bold" href="/login?next=/snap/<%= snap.id %>">들어가서</a> 한마디 남기기</p>
+      <p class="small muted"><a class="bold" href="/login?next=/snap/<%= snap.id %>">로그인</a>하고 댓글 달기</p>
     <% } %>
     <% if (user && user.id === snap.user_id) { %>
       <form method="post" action="/snap/<%= snap.id %>/delete" class="right mt" data-confirm="이 스냅을 지울까요? 되돌릴 수 없어요.">

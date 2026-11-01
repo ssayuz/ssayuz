@@ -307,14 +307,15 @@ a.person:hover { background: var(--card-2); color: var(--ink); }
 .pips span { width: 18px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.45); }
 .pips span.on { background: var(--lime); }
 .pg { position: absolute; top: 10px; right: 10px; padding: 3px 9px 1px; border-radius: 6px; border: 1.5px solid #1a1820; background: var(--lime); color: #1a1820; font-size: 12px; font-weight: 700; pointer-events: none; }
-.burst { position: absolute; inset: 0; display: grid; place-items: center; font-size: 110px; color: var(--sun); text-shadow: 3px 3px 0 #1a1820; opacity: 0; transform: scale(.3) rotate(-30deg); pointer-events: none; }
+.burst { position: absolute; inset: 0; display: grid; place-items: center; font-size: 110px; color: var(--fire); text-shadow: 3px 3px 0 #1a1820; opacity: 0; transform: scale(.3) rotate(-30deg); pointer-events: none; }
 .burst.go { animation: burst .8s ease-out; }
 @keyframes burst { 20% { opacity: 1; transform: scale(1.2) rotate(10deg); } 40%, 75% { opacity: 1; transform: scale(1) rotate(0); } 100% { opacity: 0; transform: scale(1.1); } }
 .polaroid-foot { padding: 12px 4px 14px; }
 .snap-actions { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .spark { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px 5px; border-radius: 999px; border: var(--bw) solid var(--edge); background: var(--card); cursor: pointer; font-weight: 700; font-size: 14px; }
 .spark .s-ico { font-size: 16px; line-height: 1; }
-.spark.on { background: var(--sun); color: #1a1820; }
+.spark.on { background: var(--fire-soft); color: var(--ink); }
+.spark.on .s-ico { color: var(--fire); }
 .spark.pop { animation: pop .35s; }
 @keyframes pop { 50% { transform: scale(1.15) rotate(-4deg); } }
 .caption { margin: 6px 0; font-size: 14px; }

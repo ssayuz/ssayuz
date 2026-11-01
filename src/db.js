@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS talk_votes (
   PRIMARY KEY (talk_id, voter)
 );
 
--- ===== 스냅: 사진(snaps) / 반짝(sparkles) / 한마디(says) / 찜(picks) =====
+-- ===== 스냅: 사진(snaps) / 좋아요(likes) / 댓글(comments) / 팔로우(follows) =====
 CREATE TABLE IF NOT EXISTS snaps (
   id         INTEGER PRIMARY KEY,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -85,30 +85,29 @@ CREATE TABLE IF NOT EXISTS snaps (
 );
 CREATE INDEX IF NOT EXISTS idx_snaps_user ON snaps(user_id, id DESC);
 
-CREATE TABLE IF NOT EXISTS sparkles (
+CREATE TABLE IF NOT EXISTS likes (
   snap_id    INTEGER NOT NULL REFERENCES snaps(id) ON DELETE CASCADE,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   created_at INTEGER NOT NULL,
   PRIMARY KEY (snap_id, user_id)
 );
 
-CREATE TABLE IF NOT EXISTS says (
+CREATE TABLE IF NOT EXISTS comments (
   id         INTEGER PRIMARY KEY,
   snap_id    INTEGER NOT NULL REFERENCES snaps(id) ON DELETE CASCADE,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   body       TEXT NOT NULL,
   created_at INTEGER NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_says_snap ON says(snap_id, id);
+CREATE INDEX IF NOT EXISTS idx_comments_snap ON comments(snap_id, id);
 
--- picker가 picked를 찜함 (picked 입장에서 picker는 '팬')
-CREATE TABLE IF NOT EXISTS picks (
-  picker_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  picked_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  created_at INTEGER NOT NULL,
-  PRIMARY KEY (picker_id, picked_id)
+CREATE TABLE IF NOT EXISTS follows (
+  follower_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  followee_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at  INTEGER NOT NULL,
+  PRIMARY KEY (follower_id, followee_id)
 );
-CREATE INDEX IF NOT EXISTS idx_picks_picked ON picks(picked_id);
+CREATE INDEX IF NOT EXISTS idx_follows_followee ON follows(followee_id);
 `);
 
 // 기본 공식 방

@@ -6,9 +6,9 @@
   <a href="/snap/new" class="d-plus"><span class="d-ico">＋</span>올리기</a>
   <a href="/snap" class="<%= path === '/snap' || path.startsWith('/explore') ? 'on' : '' %>"><span class="d-ico">✦</span>스냅</a>
   <% if (user) { %>
-    <a href="/@<%= user.username %>" class="<%= path.startsWith('/@' + user.username) ? 'on' : '' %>"><span class="d-ico">⌂</span>내 룸</a>
+    <a href="/@<%= user.username %>" class="<%= path.startsWith('/@' + user.username) ? 'on' : '' %>"><span class="d-ico">⌂</span>프로필</a>
   <% } else { %>
-    <a href="/login"><span class="d-ico">→</span>들어가기</a>
+    <a href="/login"><span class="d-ico">→</span>로그인</a>
   <% } %>
 </nav>
 </body>

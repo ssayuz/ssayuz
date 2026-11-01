@@ -1,6 +1,6 @@
 <%- include('partials/header') %>
 <section class="box narrow">
-  <div class="box-head"><h1 class="box-title"><a href="/@<%= member.username %>">@<%= member.username %></a>의 <%= list === 'fans' ? '팬' : '찜' %></h1></div>
+  <div class="box-head"><h1 class="box-title"><a href="/@<%= member.username %>">@<%= member.username %></a>의 <%= list === 'followers' ? '팔로워' : '팔로잉' %></h1></div>
   <div class="box-pad">
     <% if (people.length === 0) { %><div class="empty small">아직 아무도 없어요.</div><% } %>
     <% people.forEach(u => { %>

@@ -9,8 +9,8 @@
     });
   const fmt = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : String(n));
 
-  // ✦ 반짝 (새로고침 없이)
-  async function sparkle(form, force) {
+  // 좋아요 (새로고침 없이)
+  async function like(form, force) {
     const btn = form.querySelector('.spark');
     const res = await post(form.action, force ? { force: '1' } : {});
     if (res.status === 401) return (location.href = '/login?next=' + encodeURIComponent(location.pathname));
@@ -24,11 +24,11 @@
 
   document.addEventListener('submit', (e) => {
     const f = e.target;
-    if (f.matches('.spark-form')) { e.preventDefault(); sparkle(f); return; }
+    if (f.matches('.like-form')) { e.preventDefault(); like(f); return; }
     if (f.dataset.confirm && !confirm(f.dataset.confirm)) e.preventDefault();
   });
 
-  // 사진 넘기기 표시 + 더블탭 반짝
+  // 사진 넘기기 표시 + 더블탭 좋아요
   document.querySelectorAll('.photo').forEach((ph) => {
     const slides = ph.querySelector('.slides');
     const pips = ph.querySelectorAll('.pips span');
@@ -39,26 +39,26 @@
       if (pg) pg.textContent = `${i + 1} / ${pips.length}`;
     }, { passive: true });
     ph.addEventListener('dblclick', () => {
-      const form = ph.closest('.snap')?.querySelector('.spark-form');
+      const form = ph.closest('.snap')?.querySelector('.like-form');
       if (!form) return;
       const b = ph.querySelector('.burst');
       b.classList.remove('go'); void b.offsetWidth; b.classList.add('go');
-      sparkle(form, true);
+      like(form, true);
     });
   });
 
-  // 찜하기 (새로고침 없이)
-  document.querySelectorAll('.pick-form').forEach((f) => {
+  // 팔로우 (새로고침 없이)
+  document.querySelectorAll('.follow-form').forEach((f) => {
     f.addEventListener('submit', async (e) => {
       e.preventDefault();
       const res = await post(f.action);
       if (!res.ok) return f.submit();
-      const { picked, fans } = await res.json();
+      const { following, followers } = await res.json();
       const b = f.querySelector('button');
-      b.textContent = picked ? '✓ 찜함' : '♡ 찜하기';
-      b.classList.toggle('btn-lime', !picked);
-      const fc = document.querySelector('.fan-count');
-      if (fc) fc.textContent = fmt(fans);
+      b.textContent = following ? '✓ 팔로잉' : '＋ 팔로우';
+      b.classList.toggle('btn-lime', !following);
+      const fc = document.querySelector('.follower-count');
+      if (fc) fc.textContent = fmt(followers);
     });
   });
 

@@ -15,21 +15,21 @@
       <div class="pips"><% imgs.forEach((_, i) => { %><span class="<%= i === 0 ? 'on' : '' %>"></span><% }) %></div>
       <span class="pg">1 / <%= imgs.length %></span>
     <% } %>
-    <span class="burst" aria-hidden="true">✦</span>
+    <span class="burst" aria-hidden="true">♥</span>
   </div>
   <div class="polaroid-foot">
     <div class="snap-actions">
-      <form method="post" action="/snap/<%= s.id %>/sparkle" class="inline spark-form">
+      <form method="post" action="/snap/<%= s.id %>/like" class="inline like-form">
         <input type="hidden" name="_csrf" value="<%= csrf %>">
         <input type="hidden" name="back" value="<%= typeof back !== 'undefined' ? back : '' %>">
-        <button class="spark <%= s.sparkled ? 'on' : '' %>" aria-pressed="<%= s.sparkled ? 'true' : 'false' %>"><span class="s-ico">✦</span>반짝 <span class="spark-n"><%= num(s.sparkles) %></span></button>
+        <button class="spark <%= s.liked ? 'on' : '' %>" aria-pressed="<%= s.liked ? 'true' : 'false' %>"><span class="s-ico">♥</span>좋아요 <span class="spark-n"><%= num(s.likes) %></span></button>
       </form>
-      <a class="spark" href="/snap/<%= s.id %>#says">💬 한마디 <%= num(s.says) %></a>
+      <a class="spark" href="/snap/<%= s.id %>#comments">💬 댓글 <%= num(s.ccount) %></a>
     </div>
     <% if (s.caption) { %><p class="caption"><%- richText(s.caption) %></p><% } %>
-    <% if (s.says_list && !full) { %>
-      <% s.says_list.forEach(c => { %><p class="say"><a href="/@<%= c.username %>" class="bold">@<%= c.username %></a> <%- richText(c.body) %></p><% }) %>
-      <% if (s.says > s.says_list.length) { %><a class="tiny muted" href="/snap/<%= s.id %>#says">한마디 <%= s.says %>개 전부 보기 →</a><% } %>
+    <% if (s.comment_list && !full) { %>
+      <% s.comment_list.forEach(c => { %><p class="say"><a href="/@<%= c.username %>" class="bold">@<%= c.username %></a> <%- richText(c.body) %></p><% }) %>
+      <% if (s.ccount > s.comment_list.length) { %><a class="tiny muted" href="/snap/<%= s.id %>#comments">댓글 <%= s.ccount %>개 모두 보기 →</a><% } %>
     <% } %>
   </div>
 </article>

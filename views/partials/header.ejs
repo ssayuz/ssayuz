@@ -27,14 +27,14 @@
     <div class="topright">
       <% if (user) { %>
         <a class="btn btn-lime btn-sm hide-sm" href="/snap/new">＋ 스냅</a>
-        <a href="/@<%= user.username %>" title="내 룸"><img class="av av-36" src="<%= avatar(user) %>" alt="내 룸"></a>
+        <a href="/@<%= user.username %>" title="내 프로필"><img class="av av-36" src="<%= avatar(user) %>" alt="내 프로필"></a>
         <form method="post" action="/logout" class="inline hide-sm">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
-          <button class="linkbtn small">나가기</button>
+          <button class="linkbtn small">로그아웃</button>
         </form>
       <% } else { %>
-        <a href="/login?next=<%= encodeURIComponent(path) %>" class="btn btn-sm">들어가기</a>
-        <a class="btn btn-ink btn-sm" href="/signup">입주하기</a>
+        <a href="/login?next=<%= encodeURIComponent(path) %>" class="btn btn-sm">로그인</a>
+        <a class="btn btn-ink btn-sm" href="/signup">가입</a>
       <% } %>
     </div>
   </div>

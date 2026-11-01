@@ -5,15 +5,15 @@
     <img class="av av-120" src="<%= avatar(member) %>" alt="@<%= member.username %>의 사진">
     <div class="row">
       <% if (isMe) { %>
-        <a class="btn btn-sm" href="/settings">✎ 룸 꾸미기</a>
+        <a class="btn btn-sm" href="/settings">✎ 프로필 편집</a>
         <a class="btn btn-lime btn-sm" href="/snap/new">＋ 스냅</a>
       <% } else if (user) { %>
-        <form method="post" action="/@<%= member.username %>/pick" class="inline pick-form">
+        <form method="post" action="/@<%= member.username %>/follow" class="inline follow-form">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
-          <button class="btn <%= picked ? '' : 'btn-lime' %>"><%= picked ? '✓ 찜함' : '♡ 찜하기' %></button>
+          <button class="btn <%= following ? '' : 'btn-lime' %>"><%= following ? '✓ 팔로잉' : '＋ 팔로우' %></button>
         </form>
       <% } else { %>
-        <a class="btn btn-lime" href="/login?next=/@<%= member.username %>">♡ 찜하기</a>
+        <a class="btn btn-lime" href="/login?next=/@<%= member.username %>">＋ 팔로우</a>
       <% } %>
     </div>
   </div>
@@ -22,8 +22,8 @@
   <div class="stats">
     <span class="stat"><b><%= num(member.snap_count) %></b> 스냅</span>
     <span class="stat"><b><%= num(member.talk_count) %></b> 토크</span>
-    <a class="stat" href="/@<%= member.username %>/fans"><b class="fan-count"><%= num(member.fans) %></b> 팬</a>
-    <a class="stat" href="/@<%= member.username %>/picks"><b><%= num(member.picks) %></b> 찜</a>
+    <a class="stat" href="/@<%= member.username %>/followers"><b class="follower-count"><%= num(member.followers) %></b> 팔로워</a>
+    <a class="stat" href="/@<%= member.username %>/following"><b><%= num(member.following) %></b> 팔로잉</a>
   </div>
 </section>
 <nav class="tabs">

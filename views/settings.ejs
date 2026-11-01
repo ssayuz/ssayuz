@@ -1,7 +1,7 @@
 <%- include('partials/header') %>
 <section class="box box-pad-lg narrow">
-  <span class="kicker">my room</span>
-  <h1 class="h2 mt">룸 꾸미기</h1>
+  <span class="kicker">profile</span>
+  <h1 class="h2 mt">프로필 편집</h1>
   <% if (error) { %><div class="alert mt"><%= error %></div><% } %>
   <% if (saved) { %><div class="alert ok mt">저장했어요 ✓</div><% } %>
   <form method="post" action="/settings?_csrf=<%= csrf %>" enctype="multipart/form-data" class="stack mt">
